@@ -4,6 +4,7 @@
 DIR_NAME=server_code
 
 mv ../${DIR_NAME}.zip ${DIR_NAME}.zip
+rm -rf server_code
 unzip ${DIR_NAME}.zip
 rm ${DIR_NAME}.zip
 ./runServer.sh
