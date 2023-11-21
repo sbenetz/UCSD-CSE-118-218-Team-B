@@ -5,5 +5,4 @@ DIR_NAME=server_code
 
 source env/bin/activate
 cd ${DIR_NAME}
-echo $pwd
-uvicorn main:app --reload
+python3 main.py
