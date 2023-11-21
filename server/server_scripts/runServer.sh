@@ -7,4 +7,4 @@ PORT_NUMBER=8000
 
 source env/bin/activate
 cd ${DIR_NAME}
-uvicorn main:app --reload --host ${IP_ADDRESS} --port ${PORT_NUMBER}
+uvicorn main:app --host ${IP_ADDRESS} --port ${PORT_NUMBER}

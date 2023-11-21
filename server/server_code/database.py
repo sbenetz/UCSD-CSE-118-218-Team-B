@@ -7,6 +7,12 @@ class Database:
     connection = sqlite3.connect(path_to_db)
     self.cursor = connection.cursor()
 
-  def get(self):
+  # Return a JSON object of users
+  def get_users(self):
     result = self.cursor.execute("select * from users")
-    print('result:', result.fetchall())
+    return { "users": result.fetchall() }
+  
+  # Return a JSON object of devices
+  def get_devices(self):
+    result = self.cursor.execute("select * from devices")
+    return { "devices": result.fetchall() }

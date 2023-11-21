@@ -16,8 +16,16 @@ app = FastAPI()
 
 # Create Database instance
 database = Database(PATH_TO_DB)
-database.get()
 
+# Define API Rules
 @app.get("/")
 async def root():
   return {"info": "Smart Plant Water Server"}
+
+@app.get("/users")
+async def users():
+  return database.get_users()
+
+@app.get("/devices")
+async def devices():
+  return database.get_devices()
