@@ -1,15 +1,9 @@
+# Main File: API Server
 # USAGE: uvicorn main:app --reload --host <ip_address> --port <port_num>
-import uvicorn # server for running FastAPI
 from fastapi import FastAPI
-import sys # for getting command line arguments
 
 from database import Database
-
-# -- Constants --
-# Database
-DB_DIRECTORY = 'database'
-DB_FILE_NAME = 'database.db'
-PATH_TO_DB = f"../{DB_DIRECTORY}/{DB_FILE_NAME}"
+from common import *
 
 # Create FastAPI instance, this is referenced by uvicorn
 app = FastAPI()
@@ -21,6 +15,14 @@ database = Database(PATH_TO_DB)
 @app.get("/")
 async def root():
   return {"info": "Smart Plant Water Server"}
+
+@app.post("/create-account")
+async def create_account(data: CreateAccount):
+  (userId, errorMessage) = database.create_account(data)
+  if (userId is None):
+    return response_error(errorMessage)
+  else:
+    return create_account_response_success(userId)
 
 @app.get("/users")
 async def users():
