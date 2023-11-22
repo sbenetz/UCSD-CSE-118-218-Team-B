@@ -34,7 +34,7 @@ class Database:
 
   # Create account given the current data
   # returns (userId, errorMessage)
-  def create_account(self, data: CreateAccount):
+  def create_account(self, data: Account):
 
     # validate username & password
     # TODO: Cleanse username and password
@@ -49,6 +49,10 @@ class Database:
     userId = self.__generate_uniq_user_id()
     self.__insert_users(userId, data.username, data.password)
     return (userId, None)
+
+  # def login(self, data: Account):
+    # cleanse/validate username & password
+
 
 
   # -- Helper Methods -- 
