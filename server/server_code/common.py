@@ -10,7 +10,7 @@ PATH_TO_DB = f"../{DB_DIRECTORY}/{DB_FILE_NAME}"
 
 
 # - POST Request Bodies -
-class CreateAccount(BaseModel):
+class Account(BaseModel):
   username: str
   password: str
 
@@ -24,6 +24,11 @@ def response_error(error_message: str):
   }
 
 def create_account_response_success(userId: str):
+  return {
+    STATUS_SUCCESS: userId
+  }
+
+def login_response_success(userId: str):
   return {
     STATUS_SUCCESS: userId
   }
