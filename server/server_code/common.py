@@ -10,7 +10,7 @@ PATH_TO_DB = f"../{DB_DIRECTORY}/{DB_FILE_NAME}"
 
 
 # - POST Request Bodies -
-class Account(BaseModel):
+class Credentials(BaseModel):
   username: str
   password: str
 

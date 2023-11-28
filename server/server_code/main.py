@@ -17,20 +17,20 @@ async def root():
   return {"info": "Smart Plant Water Server"}
 
 @app.post("/user/new-account")
-async def new_account(data: Account):
+async def new_account(data: Credentials):
   (userId, errorMessage) = database.create_account(data)
   if errorMessage:
     return response_error(errorMessage)
   else:
     return create_account_response_success(userId)
   
-# @app.post("/login")
-# async def login(data: Account):
-#   (userId, errorMessage) = database.login(data)
-#   if errorMessage:
-#     return response_error(errorMessage)
-#   else:
-#     return login_response_success(userId)
+@app.post("/user/login")
+async def user_login(data: Credentials):
+  (userId, errorMessage) = database.login(data)
+  if errorMessage:
+    return response_error(errorMessage)
+  else:
+    return login_response_success(userId)
 
 # Temporary
 @app.get("/users")
