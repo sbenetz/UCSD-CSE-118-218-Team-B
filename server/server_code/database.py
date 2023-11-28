@@ -53,7 +53,8 @@ class Database:
     if not data.password: return (None, "invalid password")
 
     # get user by username
-    result = self.cursor.execute(f"SELECT * FROM {USERS.TABLE_NAME} WHERE {USERS.USERNAME}='{data.username}'")
+    params = (data.username, )
+    result = self.cursor.execute(f"SELECT * FROM {USERS.TABLE_NAME} WHERE {USERS.USERNAME} = ?", params)
     user = result.fetchone()
     if user is None:
       return (None, "username not found")
@@ -81,14 +82,16 @@ class Database:
 
   def __exists(self, tableName, columnName, value):
     """returns true if the value exists in the given table's column"""
-    result = self.cursor.execute(f"SELECT * FROM {tableName} WHERE {columnName}='{value}'")
+    params = (value, )
+    result = self.cursor.execute(f"SELECT * FROM {tableName} WHERE {columnName} = ?", params)
     if result.fetchone() is not None:
       return True
     return False
   
   def __insert_users(self, userId, username, password):
     """insert new row into users table"""
-    self.cursor.execute(f"INSERT INTO {USERS.TABLE_NAME} VALUES ('{userId}', '{username}', '{password}')")
+    params = (userId, username, password)
+    self.cursor.execute(f"INSERT INTO {USERS.TABLE_NAME} VALUES (?, ?, ?)", params)
     self.connection.commit()
 
  # -- Other Helper Methods
