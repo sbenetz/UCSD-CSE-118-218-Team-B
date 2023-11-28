@@ -19,20 +19,20 @@ class OnboardLED {
         void doBlink(){
             if (count_< max_){
                 if (millis() > next_toggle_){
+                    Serial.printf("Millis: %f, Next: %f\n",millis(),next_toggle_ );
                     toggleLED();
-                    next_toggle_ += period_;
-                    if (max_ != std::numeric_limits<uint8_t>::max()) count_++;
-                    return;
+                    next_toggle_ += (long)period_;
+                    if (!ON && max_ != std::numeric_limits<uint8_t>::max()) count_++;
                 }
+                Serial.printf("Count: %d, Max: %d, Next: %f\n",count_,max_,next_toggle_ );
+                return;
             }
-            digitalWrite(BUILTIN_LED,LOW);
         }
         // default blink once per second infinitely
         void setBlinkOnboardLED(uint8_t times = std::numeric_limits<uint8_t>::max(), uint32_t period = 500 /*ms*/){
             next_toggle_ = millis() + period;
             period_ = period;
-            if (times < std::numeric_limits<uint8_t>::max()) max_ = times * 2;
-            else max_ = times;
+            max_ = times;
             count_ = 0;
         }
 };
