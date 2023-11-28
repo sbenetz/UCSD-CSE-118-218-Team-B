@@ -31,12 +31,3 @@ async def user_login(data: Credentials):
     return response_error(errorMessage)
   else:
     return login_response_success(userId)
-
-# Temporary
-@app.get("/users")
-async def users():
-  return database.get_users()
-
-@app.get("/devices")
-async def devices():
-  return database.get_devices()

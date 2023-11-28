@@ -19,27 +19,19 @@ DEVICES_TABLE = 'devices'
 
 
 class Database:
+  # -- Public Methods --
+
   def __init__(self, path_to_db):
+    """Constructor"""
     print(f"connecting to database at '{path_to_db}'")
     self.connection = sqlite3.connect(path_to_db)
     self.connection.row_factory = sqlite3.Row
     self.cursor = self.connection.cursor()
 
-  # Return a JSON object of users
-  def get_users(self):
-    result = self.cursor.execute("select * from users")
-    return { "users": result.fetchall() }
-  
-  # Return a JSON object of devices
-  def get_devices(self):
-    result = self.cursor.execute("SELECT * from devices")
-    return { "devices": result.fetchall() }
-  
-  # -- Public Methods --
-
-  # Create account given the current data
-  # returns (userId, errorMessage)
   def create_account(self, data: Credentials):
+    """Create a new user account with the given credentials. Returns
+    the userId for the newly created account.
+    Returns: (userId, None) on success, (None, errorMessage) on failure"""
     # TODO: Cleanse username and password
     if not data.username: return (None, "invalid username")
     if not data.password: return (None, "invalid password")
@@ -54,6 +46,8 @@ class Database:
     return (userId, None)
 
   def login(self, data: Credentials):
+    """Return the userId of the user with the given credentials.
+    Returns: (userId, None) on success, (None, errorMessage) on failure"""
     # TODO: Cleanse username and password
     if not data.username: return (None, "invalid username")
     if not data.password: return (None, "invalid password")
