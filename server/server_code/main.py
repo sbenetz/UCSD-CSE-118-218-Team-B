@@ -16,8 +16,8 @@ database = Database(PATH_TO_DB)
 async def root():
   return {"info": "Smart Plant Water Server"}
 
-@app.post("/create-account")
-async def create_account(data: Account):
+@app.post("/user/new-account")
+async def new_account(data: Account):
   (userId, errorMessage) = database.create_account(data)
   if errorMessage:
     return response_error(errorMessage)
