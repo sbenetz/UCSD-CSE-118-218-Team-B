@@ -34,7 +34,7 @@ async def user_login(data: Credentials):
   
 
 @app.post("/device/initialization")
-async def device_initialization(data: DeviceInit):
+async def device_initialization(data: DeviceInit) -> str:
   deviceId = database.device_init(data)
   return "123-fake-device-id"
   # if deviceId is None:
@@ -43,7 +43,9 @@ async def device_initialization(data: DeviceInit):
   #   return "123-fake-device-id"
   
 @app.post("/device/check-in")
-async def device_checkin(data: DeviceCheckIn):
-  return {
-    'status': 'nice'
-  }
+async def device_checkin(data: DeviceCheckIn) -> int:
+  return -1
+
+@app.post("/device/water-confirmation")
+async def device_water_confirm(data: DeviceCredentials) -> str:
+  return "ok"

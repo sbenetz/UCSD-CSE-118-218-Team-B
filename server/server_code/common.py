@@ -24,6 +24,9 @@ class DeviceCheckIn(BaseModel):
   soilMoisture: int
   sunlight: int
 
+class DeviceCredentials(BaseModel):
+  deviceId: str
+
 # - Response Bodies -
 STATUS_SUCCESS = 'success'
 STATUS_ERROR = 'error'
