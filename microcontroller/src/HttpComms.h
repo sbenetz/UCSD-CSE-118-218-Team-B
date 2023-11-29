@@ -7,7 +7,7 @@ String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
 {
     WiFiClient client;
     HTTPClient http;
-    http.begin(client, SERVER_URL+String("/device/initialization"));
+    http.begin(client, SERVER_URL + String("/device/initialization"));
     http.addHeader("Content-Type", "application/json");
     String post_body = "{\"userId\":\"" + user_id + "\",\"plantName\":\"" + plant_name + "\",\"plantType\":" + String(plant_type_id) + "}";
     int httpResponseCode = http.POST(post_body);
@@ -16,10 +16,12 @@ String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
     String payload = http.getString();
     Serial.println(payload);
     http.end(); // Free resources
-    if(payload.length()>0 && httpResponseCode == 200) {
+    if (payload.length() > 0 && httpResponseCode == 200)
+    {
         return payload;
     }
-    else {
+    else
+    {
         Serial.println("Cannot setup device");
         return "";
     }
@@ -29,7 +31,7 @@ int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlig
 {
     WiFiClient client;
     HTTPClient http;
-    http.begin(client, SERVER_URL+String("/device/check-in"));
+    http.begin(client, SERVER_URL + String("/device/check-in"));
     http.addHeader("Content-Type", "application/json");
     String post_body = "{\"deviceId\":" + device_id + ",\"soilMoisture\":" + String(soil_moisture) + ",\"sunlight\":" + String(sunlight) + "}";
     Serial.println(post_body);

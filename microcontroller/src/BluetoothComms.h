@@ -14,12 +14,12 @@ String ssids_array[50];
 String network_string;
 String connected_string;
 
-const char* pref_ssid = "";
-const char* pref_pass = "";
+const char *pref_ssid = "";
+const char *pref_pass = "";
 String client_wifi_ssid;
 String client_wifi_password;
 
-const char* bluetooth_name = "Plant Waterer";
+const char *bluetooth_name = "Plant Waterer";
 
 long start_wifi_millis;
 long wifi_timeout = 10000; // 10 sec timeout
@@ -34,7 +34,7 @@ bool connStatusChanged = false;
 /** Characteristic for digital output */
 BLECharacteristic *pCharacteristicWiFi;
 /** BLE Advertiser */
-BLEAdvertising* pAdvertising;
+BLEAdvertising *pAdvertising;
 /** BLE Service */
 BLEService *pService;
 /** BLE Server */
@@ -42,19 +42,20 @@ BLEServer *pServer;
 
 StaticJsonDocument<200> jsonBuffer;
 
-#define SERVICE_UUID        "ab1fb9be-ce51-4b92-b0ec-f4ad17cafdda"
+#define SERVICE_UUID "ab1fb9be-ce51-4b92-b0ec-f4ad17cafdda"
 #define CHARACTERISTIC_UUID "67148bf4-ce72-4540-83c0-fcbea11c06a5"
 
-enum wifi_setup_stages { 
-    NONE, 
-    SCAN_START, 
-    SCAN_COMPLETE, 
-    SSID_ENTERED, 
-    WAIT_PASS, 
-    PASS_ENTERED, 
-    WAIT_CONNECT, 
-    LOGIN_FAILED,
-    CONNECTED 
+enum wifi_setup_stages
+{
+  NONE,
+  SCAN_START,
+  SCAN_COMPLETE,
+  SSID_ENTERED,
+  WAIT_PASS,
+  PASS_ENTERED,
+  WAIT_CONNECT,
+  LOGIN_FAILED,
+  CONNECTED
 };
 enum wifi_setup_stages wifi_stage = NONE;
 
@@ -63,20 +64,23 @@ Preferences preferences;
 String scan_wifi_networks()
 {
   Serial.println("Start scanning for networks");
-	WiFi.disconnect(true);
-	WiFi.enableSTA(true);
-	WiFi.mode(WIFI_STA);
+  WiFi.disconnect(true);
+  WiFi.enableSTA(true);
+  WiFi.mode(WIFI_STA);
 
   String output;
-	// Scan for networks
-	int16_t apNum = WiFi.scanNetworks(false,true,false,1000);
-	if (apNum == 0) {
-		Serial.println("Found no networks?????");
+  // Scan for networks
+  int16_t apNum = WiFi.scanNetworks(false, true, false, 1000);
+  if (apNum == 0)
+  {
+    Serial.println("Found no networks?????");
     output = "No Networks Found";
-	}
-  else {
+  }
+  else
+  {
     output = "Networks Found:\n";
-    for (int i = 0; i < apNum; ++i) {
+    for (int i = 0; i < apNum; ++i)
+    {
       ssids_array[i + 1] = WiFi.SSID(i);
       Serial.print(i + 1);
       Serial.print(": ");
@@ -93,127 +97,144 @@ String scan_wifi_networks()
  * MyServerCallbacks
  * Callbacks for client connection and disconnection
  */
-class MyServerCallbacks: public BLEServerCallbacks {
-	// TODO this doesn't take into account several clients being connected
-	void onConnect(BLEServer* pServer) {
-		Serial.println("BLE client connected");
-	};
+class MyServerCallbacks : public BLEServerCallbacks
+{
+  // TODO this doesn't take into account several clients being connected
+  void onConnect(BLEServer *pServer)
+  {
+    Serial.println("BLE client connected");
+  };
 
-	void onDisconnect(BLEServer* pServer) {
-		Serial.println("BLE client disconnected");
-		pAdvertising->start();
-	}
+  void onDisconnect(BLEServer *pServer)
+  {
+    Serial.println("BLE client disconnected");
+    pAdvertising->start();
+  }
 };
 
 /**
  * MyCallbackHandler
  * Callbacks for BLE client read/write requests
  */
-class MyCallbackHandler: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic) {
-		std::string value = pCharacteristic->getValue();
-		if (value.length() == 0) {
-			return;
-		}
-		Serial.println("Received over BLE: " + String((char *)&value[0]));
-
-
-		/** Json object for incoming data */
-		auto error = deserializeJson(jsonBuffer,(char *)&value[0]);
-    if (error) {
-        Serial.print("deserializeJson() failed with code ");
-        Serial.println(error.c_str());
-        return;
+class MyCallbackHandler : public BLECharacteristicCallbacks
+{
+  void onWrite(BLECharacteristic *pCharacteristic)
+  {
+    std::string value = pCharacteristic->getValue();
+    if (value.length() == 0)
+    {
+      return;
     }
-		else {
-      JsonObject data = jsonBuffer.as<JsonObject>(); 
-			if (data.containsKey("ssid") && data.containsKey("password")) {
-				client_wifi_ssid = data["ssid"].as<String>();
-				client_wifi_password = data["password"].as<String>();
-				preferences.putString("pref_ssid", client_wifi_ssid);
-				preferences.putString("pref_pass", client_wifi_password);
-				preferences.putBool("valid", true);
-				preferences.end();
+    Serial.println("Received over BLE: " + String((char *)&value[0]));
 
-				Serial.println("Received over bluetooth:");
-				Serial.println("primary SSID: "+client_wifi_ssid+" password: "+client_wifi_password);
-				connStatusChanged = true;
-				hasCredentials = true;
-			} else if (data.containsKey("erase")) {
-				Serial.println("Received erase command");
-				preferences.clear();
-				preferences.end();
-				connStatusChanged = true;
-				hasCredentials = false;
-				client_wifi_password = "";
-				client_wifi_ssid = "";
+    /** Json object for incoming data */
+    auto error = deserializeJson(jsonBuffer, (char *)&value[0]);
+    if (error)
+    {
+      Serial.print("deserializeJson() failed with code ");
+      Serial.println(error.c_str());
+      return;
+    }
+    else
+    {
+      JsonObject data = jsonBuffer.as<JsonObject>();
+      if (data.containsKey("ssid") && data.containsKey("password"))
+      {
+        client_wifi_ssid = data["ssid"].as<String>();
+        client_wifi_password = data["password"].as<String>();
+        preferences.putString("pref_ssid", client_wifi_ssid);
+        preferences.putString("pref_pass", client_wifi_password);
+        preferences.putBool("valid", true);
+        preferences.end();
 
-				int err;
-				err=nvs_flash_init();
-				Serial.println("nvs_flash_init: " + err);
-				err=nvs_flash_erase();
-				Serial.println("nvs_flash_erase: " + err);
-			} else if (data.containsKey("reset")) {
-				WiFi.disconnect();
-				esp_restart();
-			}
-      else {
+        Serial.println("Received over bluetooth:");
+        Serial.println("primary SSID: " + client_wifi_ssid + " password: " + client_wifi_password);
+        connStatusChanged = true;
+        hasCredentials = true;
+      }
+      else if (data.containsKey("erase"))
+      {
+        Serial.println("Received erase command");
+        preferences.clear();
+        preferences.end();
+        connStatusChanged = true;
+        hasCredentials = false;
+        client_wifi_password = "";
+        client_wifi_ssid = "";
+
+        int err;
+        err = nvs_flash_init();
+        Serial.println("nvs_flash_init: " + err);
+        err = nvs_flash_erase();
+        Serial.println("nvs_flash_erase: " + err);
+      }
+      else if (data.containsKey("reset"))
+      {
+        WiFi.disconnect();
+        esp_restart();
+      }
+      else
+      {
         Serial.println("Received invalid JSON");
       }
     }
-		jsonBuffer.clear();
-	};
+    jsonBuffer.clear();
+  };
 
-	void onRead(BLECharacteristic *pCharacteristic) {
-		Serial.println("BLE onRead request");
-		String message;
-    switch (wifi_stage){
-      case (NONE):
-        message = "Hello from Plant Waterer";
-        break;
-      case (SCAN_START): 
-        message = scan_wifi_networks();
-        break;
-      // case (SCAN_COMPLETE): 
+  void onRead(BLECharacteristic *pCharacteristic)
+  {
+    Serial.println("BLE onRead request");
+    String message;
+    switch (wifi_stage)
+    {
+    case (NONE):
+      message = "Hello from Plant Waterer";
+      break;
+    case (SCAN_START):
+      message = scan_wifi_networks();
+      break;
+      // case (SCAN_COMPLETE):
       // case (SSID_ENTERED):
-      // case (WAIT_PASS): 
-      // case (PASS_ENTERED): 
+      // case (WAIT_PASS):
+      // case (PASS_ENTERED):
       // case (WAIT_CONNECT):
-      // case (LOGIN_FAILED): 
+      // case (LOGIN_FAILED):
     }
-		// /** Json object for outgoing data */
-		// JsonObject& jsonOut = jsonBuffer.createObject();
-		// jsonOut["ssid"] = ssidPrim;
-		// jsonOut["passwrod"] = pwPrim;
-		// Convert JSON object into a string
-		// jsonOut.printTo(message);
-		pCharacteristicWiFi->setValue(std::string(message.c_str()));
-		// jsonBuffer.clear();
-	}
+    // /** Json object for outgoing data */
+    // JsonObject& jsonOut = jsonBuffer.createObject();
+    // jsonOut["ssid"] = ssidPrim;
+    // jsonOut["passwrod"] = pwPrim;
+    // Convert JSON object into a string
+    // jsonOut.printTo(message);
+    pCharacteristicWiFi->setValue(std::string(message.c_str()));
+    // jsonBuffer.clear();
+  }
 };
 
 /** Callback for receiving IP address from AP */
-void gotIP(WiFiEvent_t  event) {
-	isConnected = true;
-	connStatusChanged = true;
+void gotIP(WiFiEvent_t event)
+{
+  isConnected = true;
+  connStatusChanged = true;
 }
 
 /** Callback for connection loss */
-void lostCon(WiFiEvent_t event) {
-	isConnected = false;
-	connStatusChanged = true;
+void lostCon(WiFiEvent_t event)
+{
+  isConnected = false;
+  connStatusChanged = true;
 }
 
 bool init_wifi()
 {
   // Setup callback function for successful connection
   WiFi.onEvent(gotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
-	// Setup callback function for lost connection
-	WiFi.onEvent(lostCon, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+  // Setup callback function for lost connection
+  WiFi.onEvent(lostCon, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
-	WiFi.disconnect(true);
-	WiFi.enableSTA(true);
-	WiFi.mode(WIFI_STA);
+  WiFi.disconnect(true);
+  WiFi.enableSTA(true);
+  WiFi.mode(WIFI_STA);
 
   String temp_pref_ssid = preferences.getString("pref_ssid");
   String temp_pref_pass = preferences.getString("pref_pass");
@@ -227,10 +248,12 @@ bool init_wifi()
 
   start_wifi_millis = millis();
   WiFi.begin(pref_ssid, pref_pass);
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
-    if (millis() - start_wifi_millis > wifi_timeout) {
+    if (millis() - start_wifi_millis > wifi_timeout)
+    {
       WiFi.disconnect(true, true);
       return false;
     }
@@ -243,32 +266,32 @@ bool init_wifi()
  * Initialize BLE service and characteristic
  * Start BLE server and service advertising
  */
-void initBLE() {
-	// Initialize BLE and set output power
-	BLEDevice::init(bluetooth_name);
-	BLEDevice::setPower(ESP_PWR_LVL_P7);
+void initBLE()
+{
+  // Initialize BLE and set output power
+  BLEDevice::init(bluetooth_name);
+  BLEDevice::setPower(ESP_PWR_LVL_P7);
 
-	// Create BLE Server
-	pServer = BLEDevice::createServer();
-	// Set server callbacks
-	pServer->setCallbacks(new MyServerCallbacks());
-	// Create BLE Service
-	pService = pServer->createService(BLEUUID(SERVICE_UUID),20);
-	// Create BLE Characteristic for WiFi settings
-	pCharacteristicWiFi = pService->createCharacteristic(
-		BLEUUID(CHARACTERISTIC_UUID),
-		// WIFI_UUID,
-		BLECharacteristic::PROPERTY_READ |
-		BLECharacteristic::PROPERTY_WRITE
-	);
-	pCharacteristicWiFi->setCallbacks(new MyCallbackHandler());
-	// Start the service
-	pService->start();
+  // Create BLE Server
+  pServer = BLEDevice::createServer();
+  // Set server callbacks
+  pServer->setCallbacks(new MyServerCallbacks());
+  // Create BLE Service
+  pService = pServer->createService(BLEUUID(SERVICE_UUID), 20);
+  // Create BLE Characteristic for WiFi settings
+  pCharacteristicWiFi = pService->createCharacteristic(
+      BLEUUID(CHARACTERISTIC_UUID),
+      // WIFI_UUID,
+      BLECharacteristic::PROPERTY_READ |
+          BLECharacteristic::PROPERTY_WRITE);
+  pCharacteristicWiFi->setCallbacks(new MyCallbackHandler());
+  // Start the service
+  pService->start();
   // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
   pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 }
@@ -277,36 +300,43 @@ void beginRFServices()
   Serial.println("Booting...");
 
   preferences.begin("device_properties", false);
-  if (!init_wifi()) { // Connect to Wi-Fi fails
-    
-  } else {
+  if (!init_wifi())
+  { // Connect to Wi-Fi fails
+  }
+  else
+  {
   }
   initBLE();
 }
 
 void inLoop()
 {
-  if (connStatusChanged) {
-		if (isConnected) {
-			Serial.print("Connected to AP: ");
-			Serial.print(WiFi.SSID());
-			Serial.print(" with IP: ");
-			Serial.print(WiFi.localIP());
-			Serial.print(" RSSI: ");
-			Serial.println(WiFi.RSSI());
-		} else {
-			if (hasCredentials) {
-				Serial.println("Lost WiFi connection");
-				// Received WiFi credentials
-				// if (!scanWiFi) { // Check for available AP's
-				// 	Serial.println("Could not find any AP");
-				// } else { // If AP was found, start connection
-				// 	connectWiFi();
-				// }
-			} 
-		}
-		connStatusChanged = false;
-	}
+  if (connStatusChanged)
+  {
+    if (isConnected)
+    {
+      Serial.print("Connected to AP: ");
+      Serial.print(WiFi.SSID());
+      Serial.print(" with IP: ");
+      Serial.print(WiFi.localIP());
+      Serial.print(" RSSI: ");
+      Serial.println(WiFi.RSSI());
+    }
+    else
+    {
+      if (hasCredentials)
+      {
+        Serial.println("Lost WiFi connection");
+        // Received WiFi credentials
+        // if (!scanWiFi) { // Check for available AP's
+        // 	Serial.println("Could not find any AP");
+        // } else { // If AP was found, start connection
+        // 	connectWiFi();
+        // }
+      }
+    }
+    connStatusChanged = false;
+  }
 
   // switch (wifi_stage)
   // {
@@ -348,5 +378,4 @@ void inLoop()
   //     wifi_stage = SCAN_START;
   //     break;
   // }
-  
 }
