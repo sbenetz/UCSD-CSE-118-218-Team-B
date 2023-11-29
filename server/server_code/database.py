@@ -28,6 +28,7 @@ class Database:
     self.connection.row_factory = sqlite3.Row
     self.cursor = self.connection.cursor()
 
+
   def create_account(self, data: Credentials):
     """Create a new user account with the given credentials. Returns
     the userId for the newly created account.
@@ -44,6 +45,7 @@ class Database:
     userId = self.__generate_uniq_user_id()
     self.__insert_users(userId, data.username, data.password)
     return (userId, None)
+
 
   def login(self, data: Credentials):
     """Return the userId of the user with the given credentials.
@@ -67,6 +69,8 @@ class Database:
     return (user[USERS.USER_ID], None)
     
 
+  def device_init(self, data: DeviceInit):
+    return None
 
 
   # -- Helper Methods -- 

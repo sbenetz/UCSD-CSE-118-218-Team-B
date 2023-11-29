@@ -31,3 +31,19 @@ async def user_login(data: Credentials):
     return response_error(errorMessage)
   else:
     return login_response_success(userId)
+  
+
+@app.post("/device/initialization")
+async def device_initialization(data: DeviceInit):
+  deviceId = database.device_init(data)
+  return "123-fake-device-id"
+  # if deviceId is None:
+  #   return ""
+  # else:
+  #   return "123-fake-device-id"
+  
+@app.post("/device/check-in")
+async def device_checkin(data: DeviceCheckIn):
+  return {
+    'status': 'nice'
+  }
