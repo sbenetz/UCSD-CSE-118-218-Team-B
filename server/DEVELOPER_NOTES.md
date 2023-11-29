@@ -81,7 +81,12 @@ Then Endpoint: `https://1392-2603-8001-8d00-7e27-00-19c9.ngrok-free.app`
 
 
 
-## Setup API Server
+## Setup New API Server On Raspberry Pi
+Create new directory:
+```sh
+mkdir <directory-name>
+cd <directory-name>
+```
 ### Setup Python Virtual Environment (venv)
 Create venv:
 ```sh
@@ -109,7 +114,8 @@ sqlite3 database.db < schema.sql
 ```
 
 ### Running
+Now, from your local machine, run [the build script](__build.sh) from this repository with the correct arguments:
 ```sh
-lsof -i :8000
+./__build.sh <directory-name> <port-number>
 ```
 

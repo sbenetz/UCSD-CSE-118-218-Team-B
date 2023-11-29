@@ -1,4 +1,12 @@
 #!/bin/bash
+# Build script. Should not be called directly, but rather via 
+# prod-build.sh or dev-build.sh
+
+# USAGE:
+# <API_SERVER_DIR>: ie 'prod-server' or 'dev-server'
+# <API_SERVER_PORT>: port to run the API server on
+USAGE="Usage: $0 <API_SERVER_DIR> <API_SERVER_PORT>"
+
 SRC_DIR=src
 UPDATE_SCRIPT_NAME=updateServer.sh
 UPDATE_SCRIPT_PATH=server_scripts/${UPDATE_SCRIPT_NAME}
@@ -6,9 +14,15 @@ USERNAME=root
 HOSTNAME="8.tcp.us-cal-1.ngrok.io"
 HOST_PORT=12976
 
-# Differs for Dev/Prod
-API_SERVER_DIR=prod-server
-API_SERVER_PORT=8000
+# Parse Cmd Line Arguments
+if [ "$#" -ne 2 ]; then
+  echo ${USAGE}
+  exit 1
+fi
+
+# Production vs. Development variables
+API_SERVER_DIR="$1"
+API_SERVER_PORT="$2"
 
 echo "Building to production"
 

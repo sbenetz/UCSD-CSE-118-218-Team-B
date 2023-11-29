@@ -7,8 +7,8 @@ LOG_FILE=output.log
 
 # -- Parse Cmd Line Arguments --
 if [ "$#" -ne 1 ]; then
-    echo USAGE
-    exit 1
+  echo ${USAGE}
+  exit 1
 fi
 API_SERVER_PORT=$1
 
