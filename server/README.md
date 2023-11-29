@@ -32,19 +32,3 @@ NOTE: if the server's code is already updated, the server can also be started wi
 ```sh
 ./runServer.sh
 ```
-
-
-
-## DEVELOPER NOTES
-### Setup of venv on server
-Create venv:
-```sh
-python3 -m venv venv
-```
-Install necessary packages:
-```sh
-source venv/bin/activate
-pip install uvicorn
-pip install fastapi
-```
-
