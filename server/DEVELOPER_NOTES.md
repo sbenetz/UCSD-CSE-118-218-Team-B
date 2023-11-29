@@ -85,14 +85,31 @@ Then Endpoint: `https://1392-2603-8001-8d00-7e27-00-19c9.ngrok-free.app`
 ### Setup Python Virtual Environment (venv)
 Create venv:
 ```sh
-python3 -m venv venv
+python3 -m venv env
 ```
 Install necessary packages:
 ```sh
-source venv/bin/activate
+source env/bin/activate
 pip install uvicorn
 pip install fastapi
 ```
+(`deactivate` exits the virtual environment)
 
+### Setup Database
+```sh
+mkdir database
+cd database
+nano schema.sql
+```
+Copy and paste the contents of [database_schema/schema.sql](database_schema/schema.sql) into the nano text editor & save.
 
+Create database from schema:
+```sh
+sqlite3 database.db < schema.sql
+```
+
+### Running
+```sh
+lsof -i :8000
+```
 
