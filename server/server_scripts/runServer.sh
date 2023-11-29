@@ -6,7 +6,7 @@ PORT_NUMBER=8000
 LOG_FILE=output.log
 
 # Kill current process using PORT_NUMBER if exists
-CURR_PROC_PID=$(lsof -i :8000 | awk 'NR==2 {print $2}')
+CURR_PROC_PID=$(lsof -i :${PORT_NUMBER} | awk 'NR==2 {print $2}')
 if [ -n "${CURR_PROC_PID}" ]; then
   echo "Killing process ${CURR_PROC_PID}"
   kill ${CURR_PROC_PID}
