@@ -42,45 +42,39 @@ void IOBegin()
     lightMeter.begin();
     // startup onboard LED code
     builtinLED.begin();
+    // builtinLED.setBlinkOnboardLED();
+    //  wifi initialization
+    beginRFServices();
+    // WiFi.begin(WIFI_SSID, WIFI_PASS);
+    // Serial.print("Connecting to WiFi...");
+    // while (WiFi.status() != WL_CONNECTED)
+    // {
+    //     delay(1000);
+    //     Serial.print(".");
+    // }
+    // Serial.println("");
+    // Serial.println("Connected to WiFi");
+    // if (WiFi.status() == WL_CONNECTED)
+    // {
+    //     deviceID = postNewDevice("shane", "greenie", 1);
+    //     Serial.println("Device ID set: "+ deviceID);
+    // }
     // setup pins
-    pinMode(SOIL_SENSOR_VCC, OUTPUT);
-    pinMode(SOIL_SENSOR_GND, OUTPUT);
-    pinMode(SOIL_SENSOR_SIG, ANALOG);
-    pinMode(WATER_PUMP_GND, OUTPUT);
-    pinMode(WATER_PUMP_VCC, OUTPUT);
-    pinMode(WATER_PUMP_SIG, OUTPUT);
-
+    pinMode(25, OUTPUT); // powers soil moisture sensor
+    pinMode(26, OUTPUT); // grounds soil moisture sensor
+    pinMode(33, ANALOG); // reads value from soil moisture sensor
     // initalize pin values
-    digitalWrite(WATER_PUMP_GND, LOW);
-    digitalWrite(WATER_PUMP_VCC, LOW);
-    digitalWrite(WATER_PUMP_SIG, LOW);
-    digitalWrite(SOIL_SENSOR_VCC, HIGH);
-    digitalWrite(SOIL_SENSOR_GND, LOW);
-}
-void setup()
-{
-    Serial.begin(115200);
-    // Start sensors, actuators, LED
-    IOBegin();
-
-    // wifi initialization
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
-    Serial.print("Connecting to WiFi...");
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(3000);
-        Serial.print(".");
-    }
-    Serial.println("");
-    Serial.println("Connected to WiFi");
+    digitalWrite(25, HIGH);
+    digitalWrite(26, LOW);
 }
 
 void loop()
 {
     static uint8_t i = 0;
+    inLoop();
     if (i < ARRAY_SIZE)
     {
-        soilReadingHistory[i] = (uint8_t)((double)(soil_moisture_max - analogReadMilliVolts(SOIL_SENSOR_SIG)) / (double)(soil_moisture_max - soil_moisture_min) * 100.0);
+        soilReadingHistory[i] = (uint8_t)((double)(soil_moisture_max - analogReadMilliVolts(33)) / (double)(soil_moisture_max - soil_moisture_min) * 100.0);
         sunlightReadingHistory[i] = (uint32_t)lightMeter.readLightLevel();
         i++;
     }
