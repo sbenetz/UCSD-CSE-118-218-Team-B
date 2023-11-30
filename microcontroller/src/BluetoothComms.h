@@ -111,6 +111,7 @@ class MyServerCallbacks : public BLEServerCallbacks
     pAdvertising->start();
   }
 };
+enum wifi_setup_stages wifi_stage = NONE;
 
 /**
  * MyCallbackHandler
