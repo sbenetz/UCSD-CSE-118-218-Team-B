@@ -30,22 +30,25 @@ public:
         {
             if (millis() > next_toggle_)
             {
-                Serial.printf("Millis: %f, Next: %f\n", millis(), next_toggle_);
                 toggleLED();
-                next_toggle_ += (long)period_;
-                if (!ON && max_ != std::numeric_limits<uint8_t>::max())
+                next_toggle_ += period_;
+                if (ON && max_ != std::numeric_limits<uint8_t>::max())
                     count_++;
+                return;
             }
-            Serial.printf("Count: %d, Max: %d, Next: %f\n", count_, max_, next_toggle_);
-            return;
         }
+        Serial.printf("Count: %d, Max: %d, Next: %f\n", count_, max_, next_toggle_);
+        return;
     }
-    // default blink once per second infinitely
-    void setBlinkOnboardLED(uint8_t times = std::numeric_limits<uint8_t>::max(), uint32_t period = 500 /*ms*/)
-    {
-        next_toggle_ = millis() + period;
-        period_ = period;
-        max_ = times;
-        count_ = 0;
-    }
-};
+}
+// default blink once per second infinitely
+void
+setBlinkOnboardLED(uint8_t times = std::numeric_limits<uint8_t>::max(), uint32_t period = 500 /*ms*/)
+{
+    next_toggle_ = millis() + period;
+    period_ = period;
+    max_ = times;
+    count_ = 0;
+}
+}
+;
