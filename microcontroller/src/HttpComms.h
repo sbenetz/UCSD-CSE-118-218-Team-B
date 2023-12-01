@@ -1,7 +1,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-#define SERVER_URL "https://2638-2603-8001-8d00-7e27-00-19c9.ngrok-free.app/"
+#define SERVER_URL "https://2638-2603-8001-8d00-7e27-00-19c9.ngrok-free.app"
 
 String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
 {

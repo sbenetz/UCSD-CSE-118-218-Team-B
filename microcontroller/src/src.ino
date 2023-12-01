@@ -1,4 +1,4 @@
-#include <WiFi.h>
+#include <Arduino.h>
 #include <Wire.h>
 #include <BH1750.h>
 
@@ -42,23 +42,8 @@ void IOBegin()
     lightMeter.begin();
     // startup onboard LED code
     builtinLED.begin();
-    // builtinLED.setBlinkOnboardLED();
-    //  wifi initialization
+    // begin Bluetooth server and wifi if available
     beginRFServices();
-    // WiFi.begin(WIFI_SSID, WIFI_PASS);
-    // Serial.print("Connecting to WiFi...");
-    // while (WiFi.status() != WL_CONNECTED)
-    // {
-    //     delay(1000);
-    //     Serial.print(".");
-    // }
-    // Serial.println("");
-    // Serial.println("Connected to WiFi");
-    // if (WiFi.status() == WL_CONNECTED)
-    // {
-    //     deviceID = postNewDevice("shane", "greenie", 1);
-    //     Serial.println("Device ID set: "+ deviceID);
-    // }
     // setup pins
     pinMode(25, OUTPUT); // powers soil moisture sensor
     pinMode(26, OUTPUT); // grounds soil moisture sensor
@@ -86,9 +71,9 @@ void loop()
         Serial.printf("Soil Moisture (mV): %d, ", analogReadMilliVolts(SOIL_SENSOR_SIG));
         Serial.printf("Light_(lx): %d \n", light_average);
         builtinLED.setBlinkOnboardLED(3);
+        watering_level = postSensorReadings(deviceID, soil_average, light_average);
         if ((int)soil_average < watering_level)
         {
-            Serial.printf("Soil: %d, Watering Level: %d\n", soil_average, watering_level);
             Serial.println("Watering");
             waterPumpOn(3000);
         }
