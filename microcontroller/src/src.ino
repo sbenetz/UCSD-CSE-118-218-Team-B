@@ -5,92 +5,102 @@
 #include "BlinkLED.h"
 #include "Credentials.h"
 
-BH1750 light_meter;
-OnboardLED onBoardLED;
-HTTPClient http;
 
-#define ARRAY_SIZE 10
 
-#define WATER_PUMP_VCC 16
-#define WATER_PUMP_GND 17
+#define WATER_PUMP_VCC 14
+#define WATER_PUMP_GND 12
+#define WATER_PUMP_SIG 27
 #define SOIL_SENSOR_VCC 25
 #define SOIL_SENSOR_GND 26
 #define SOIL_SENSOR_SIG 33
-uint32_t last_soil_readings[ARRAY_SIZE];
-uint32_t last_sunlight_readings[ARRAY_SIZE];
-void setup() {
-  // start up objects
-  Serial.begin(115200);
-  // BH1750 light meter
-  Wire.begin();
-  light_meter.begin();
-  // startup onboard LED code
-  onBoardLED.begin();
-  //onBoardLED.setBlinkOnboardLED();
-  // wifi initialization
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  Serial.print("Connecting to WiFi...");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("Connected to WiFi");
-  // setup pins
-  pinMode(SOIL_SENSOR_VCC, OUTPUT);
-  pinMode(SOIL_SENSOR_GND, OUTPUT);
-  pinMode(SOIL_SENSOR_SIG, ANALOG);
-  // pinMode(WATER_PUMP_GND, OUTPUT);
-  // pinMode(WATER_PUMP_VCC, OUTPUT);
 
-  // initalize pin values
-  // digitalWrite(WATER_PUMP_GND, LOW);
-  // digitalWrite(WATER_PUMP_VCC, LOW);
-  digitalWrite(SOIL_SENSOR_VCC, HIGH);
-  digitalWrite(SOIL_SENSOR_GND, LOW);
+int watering_level = 10;
+uint32_t soil_moisture_max = 2750;
+uint32_t soil_moisture_min = 1300;
+
+#define ARRAY_SIZE 10
+uint32_t sunlightReadingHistory[ARRAY_SIZE]; // 0 - ~65000(lumens)
+uint32_t soilReadingHistory[ARRAY_SIZE]; // 0-100(%)
+
+BH1750 lightMeter;
+OnboardLED builtinLED;
+HTTPClient http;
+
+void waterPumpOn(uint time_ms) {
+    digitalWrite(WATER_PUMP_VCC, HIGH);
+    digitalWrite(WATER_PUMP_SIG, HIGH);
+    delay(time_ms);
+    digitalWrite(WATER_PUMP_VCC, LOW);
+    digitalWrite(WATER_PUMP_SIG, LOW);
+
+}
+void IOBegin(){
+    // BH1750 light meter
+    Wire.begin();
+    // pins are already set up through SCL & SDA
+    lightMeter.begin();
+    // startup onboard LED code
+    builtinLED.begin();
+    // setup pins
+    pinMode(SOIL_SENSOR_VCC, OUTPUT);
+    pinMode(SOIL_SENSOR_GND, OUTPUT);
+    pinMode(SOIL_SENSOR_SIG, ANALOG);
+    pinMode(WATER_PUMP_GND, OUTPUT);
+    pinMode(WATER_PUMP_VCC, OUTPUT);
+    pinMode(WATER_PUMP_SIG, OUTPUT);
+
+    // initalize pin values
+    digitalWrite(WATER_PUMP_GND, LOW);
+    digitalWrite(WATER_PUMP_VCC, LOW);
+    digitalWrite(WATER_PUMP_SIG, LOW);
+    digitalWrite(SOIL_SENSOR_VCC, HIGH);
+    digitalWrite(SOIL_SENSOR_GND, LOW);
+}
+void setup() {
+    Serial.begin(115200);
+    // Start sensors, actuators, LED
+    IOBegin();
+
+    // wifi initialization
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    Serial.print("Connecting to WiFi...");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(3000);
+        Serial.print(".");
+    }
+    Serial.println("");
+    Serial.println("Connected to WiFi");
+  
 }
 
 void loop() {
   static uint8_t i = 0;
-  // if(WiFi.status()== WL_CONNECTED){
-  //     HTTPClient http;
-  //     http.begin("https://api.weather.gov/points/39.7456,-97.0892");
-  //     int httpResponseCode = http.GET();
-  //     if (httpResponseCode>0) {
-  //         Serial.print("HTTP Response code: ");
-  //         Serial.println(httpResponseCode);
-  //         String payload = http.getString();
-  //         Serial.println(payload);
-  //     }
-  //     else {
-  //         Serial.print("Error code: ");
-  //         Serial.println(httpResponseCode);
-  //     }
-  //     // Free resources
-  //     http.end();
-  // }
-  if (i < ARRAY_SIZE) {
-    last_soil_readings[i] = analogReadMilliVolts(SOIL_SENSOR_SIG);
-    last_sunlight_readings[i] = (uint32_t)light_meter.readLightLevel();
-    i++;
-  } else {
-    uint32_t soil_average = getAverage(last_soil_readings);
-    uint32_t light_average = getAverage(last_sunlight_readings);
-    Serial.printf("Soil_Moisture_(mV): %d, ", soil_average);
-    Serial.printf("Light_(lx): %d \n", light_average);
-    // if (soil_average < 1500) {
-    //   Serial.println("Pumping water");
-    //   digitalWrite(WATER_PUMP_VCC, HIGH);
-    //   delay(1000);
-    //   digitalWrite(WATER_PUMP_VCC, LOW);
-    //   onBoardLED.setBlinkOnboardLED(3);
-    // }
-    i = 0;
-    
-  }
+  if (i < ARRAY_SIZE)
+    {
+        soilReadingHistory[i] = (uint8_t)((double)(soil_moisture_max-analogReadMilliVolts(SOIL_SENSOR_SIG))/(double)(soil_moisture_max-soil_moisture_min)*100.0);
+        sunlightReadingHistory[i] = (uint32_t)lightMeter.readLightLevel();
+        i++;
+    }
+    else
+    {
+        uint32_t soil_average = getAverage(soilReadingHistory);
+        uint32_t light_average = getAverage(sunlightReadingHistory);
+        Serial.printf("Soil_Moisture (%): %d, ", soil_average);
+        Serial.printf("Soil Moisture (mV): %d, ",analogReadMilliVolts(SOIL_SENSOR_SIG));
+        Serial.printf("Light_(lx): %d \n", light_average);
+        builtinLED.setBlinkOnboardLED(3);
+        if((int)soil_average < watering_level){
+            Serial.printf("Soil: %d, Watering Level: %d\n", soil_average, watering_level);
+            Serial.println("Watering");
+            waterPumpOn(3000);
+            
 
-  onBoardLED.doBlink();  // run blinks if setup
-  delay(200);
+        }
+        i = 0;
+    }
+
+  builtinLED.doBlink();  // run blinks if setup
+  delay(500);
 }
 
 uint32_t getAverage(uint32_t array[ARRAY_SIZE]) {

@@ -1,5 +1,9 @@
 #include <Arduino.h>
 #include <limits>
+
+#ifndef BUILTIN_LED
+#define BUILTIN_LED 5
+#endif
 class OnboardLED {
     public:
         bool ON;
@@ -10,8 +14,9 @@ class OnboardLED {
         void begin(){
             ON = false;
             pinMode(BUILTIN_LED,OUTPUT);
-            digitalWrite(BUILTIN_LED,LOW);
+            digitalWrite(BUILTIN_LED,!ON);
         }
+        // HIGH = OFF, LOW = ON
         void toggleLED() {
             digitalWrite(BUILTIN_LED, !ON); // write inversed state back
             ON = !ON;
@@ -19,13 +24,11 @@ class OnboardLED {
         void doBlink(){
             if (count_< max_){
                 if (millis() > next_toggle_){
-                    Serial.printf("Millis: %f, Next: %f\n",millis(),next_toggle_ );
                     toggleLED();
-                    next_toggle_ += (long)period_;
-                    if (!ON && max_ != std::numeric_limits<uint8_t>::max()) count_++;
+                    next_toggle_ += period_;
+                    if (ON && max_ != std::numeric_limits<uint8_t>::max() ) count_++;
+                    return;
                 }
-                Serial.printf("Count: %d, Max: %d, Next: %f\n",count_,max_,next_toggle_ );
-                return;
             }
         }
         // default blink once per second infinitely
