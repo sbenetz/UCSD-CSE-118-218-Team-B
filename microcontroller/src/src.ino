@@ -5,7 +5,7 @@
 #include "BlinkLED.h"
 #include "Credentials.h"
 #include "HttpComms.h"
-#include "BluetoothComms.h"
+#include "RFComms.h"
 
 #define WATER_PUMP_VCC 14
 #define WATER_PUMP_GND 12
@@ -63,16 +63,11 @@ void setup()
   // Start sensors, actuators, LED
   IOBegin();
 
-  // wifi initialization
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  Serial.print("Connecting to WiFi...");
-  while (WiFi.status() != WL_CONNECTED)
+  if (beginRFServices())
   {
-    delay(3000);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("Connected to WiFi");
+    deviceID = postNewDevice("shane", "greenie", 1);
+    Serial.println("Device ID set: " + deviceID);
+  };
 }
 
 void loop()
