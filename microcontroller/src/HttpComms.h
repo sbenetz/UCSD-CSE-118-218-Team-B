@@ -1,13 +1,24 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-#define SERVER_URL "https://2638-2603-8001-8d00-7e27-00-19c9.ngrok-free.app"
-
+#define SERVER_URL "https://fit-glowworm-promptly.ngrok-free.app/"
+/**
+ * @brief Sends a request to the server to setup this device and gets an Id back
+ *
+ * @param user_id which user is using this device
+ * @param plant_name name given to this device
+ * @param plant_type_id what type of plant this is
+ * @return device ID returned from server, empty if failed
+ */
 String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
 {
     WiFiClient client;
     HTTPClient http;
-    http.begin(client, SERVER_URL + String("/device/initialization"));
+    if (!http.begin(client, SERVER_URL + String("device/initialization")))
+    {
+        Serial.println("Can't reach server");
+        return "";
+    }
     http.addHeader("Content-Type", "application/json");
     String post_body = "{\"userId\":\"" + user_id + "\",\"plantName\":\"" + plant_name + "\",\"plantType\":" + String(plant_type_id) + "}";
     int httpResponseCode = http.POST(post_body);
@@ -25,14 +36,22 @@ String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
     }
 }
 
+/**
+ * @brief Posts updates to the server for providing sensor readings and getting watering settings back
+ *
+ * @param device_id id of this device
+ * @param soil_moisture percentage moisture in soil
+ * @param sunlight integer sunlight level to report
+ * @return integer watering level for plant
+ */
 int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlight)
 {
     WiFiClient client;
     HTTPClient http;
-    Serial.println("WifiClient Connected: " + String(client.connected()));
-    if (!http.begin(client, SERVER_URL + String("/device/check-in")))
+    // Serial.println("WifiClient Connected: " + String(client.connected()));
+    if (!http.begin(client, SERVER_URL + String("device/check-in")))
     {
-        Serial.println("HttpClient Not Connected");
+        Serial.println("Can't reach server");
         return -1;
     };
     http.addHeader("Content-Type", "application/json");
