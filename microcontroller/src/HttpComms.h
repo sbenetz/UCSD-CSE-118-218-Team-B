@@ -3,7 +3,7 @@
 #include <HTTPClient.h>
 #include "Certificate.h"
 
-#define SERVER_URL "https://fit-glowworm-promptly.ngrok-free.app/"
+#define SERVER_URL "http://fit-glowworm-promptly.ngrok-free.app/"
 
 /**
  * @brief Sends a request to the server to setup this device and gets an Id back
@@ -16,10 +16,10 @@
 String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
 {
     HTTPClient http;
-    WiFiClientSecure client;
-    client.setCACert(CERTIFICATE);
-    // client.setInsecure();
-    // http.setReuse(true);
+    WiFiClient client;
+    // client.setCACert(CERTIFICATE);
+    //  client.setInsecure();
+    //  http.setReuse(true);
     if (!http.begin(client, SERVER_URL + String("device/initialization")))
     {
         Serial.println("Can't reach server");
@@ -54,9 +54,9 @@ String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
 int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlight)
 {
     HTTPClient http;
-    WiFiClientSecure client;
-    client.setCACert(CERTIFICATE);
-    // http.setReuse(true);
+    WiFiClient client;
+    // client.setCACert(CERTIFICATE);
+    //  http.setReuse(true);
     if (!http.begin(client, SERVER_URL + String("device/check-in")))
     {
         Serial.println("Can't reach server");
