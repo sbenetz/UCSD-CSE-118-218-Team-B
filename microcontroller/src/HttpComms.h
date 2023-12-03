@@ -1,7 +1,10 @@
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
+#include "Certificate.h"
 
 #define SERVER_URL "https://fit-glowworm-promptly.ngrok-free.app/"
+
 /**
  * @brief Sends a request to the server to setup this device and gets an Id back
  *
@@ -12,8 +15,11 @@
  */
 String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
 {
-    WiFiClient client;
     HTTPClient http;
+    WiFiClientSecure client;
+    client.setCACert(CERTIFICATE);
+    // client.setInsecure();
+    // http.setReuse(true);
     if (!http.begin(client, SERVER_URL + String("device/initialization")))
     {
         Serial.println("Can't reach server");
@@ -21,6 +27,7 @@ String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
     }
     http.addHeader("Content-Type", "application/json");
     String post_body = "{\"userId\":\"" + user_id + "\",\"plantName\":\"" + plant_name + "\",\"plantType\":" + String(plant_type_id) + "}";
+    Serial.println(post_body);
     int httpResponseCode = http.POST(post_body);
     String payload = http.getString();
     Serial.printf("New Device HTTP Response: [%d] %s %s\n", httpResponseCode, HTTPClient::errorToString(httpResponseCode).c_str(), payload.c_str());
@@ -46,9 +53,10 @@ String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
  */
 int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlight)
 {
-    WiFiClient client;
     HTTPClient http;
-    // Serial.println("WifiClient Connected: " + String(client.connected()));
+    WiFiClientSecure client;
+    client.setCACert(CERTIFICATE);
+    // http.setReuse(true);
     if (!http.begin(client, SERVER_URL + String("device/check-in")))
     {
         Serial.println("Can't reach server");
