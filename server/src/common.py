@@ -29,23 +29,5 @@ class DeviceCredentials(BaseModel):
 
 # - Response Bodies -
 class UserId(BaseModel):
-  status: str | None = None
   userId: str | None = None
-
-STATUS_SUCCESS = 'success'
-STATUS_ERROR = 'error'
-
-def response_error(error_message: str):
-  return {
-    STATUS_ERROR: error_message
-  }
-
-def create_account_response_success(userId: str):
-  return {
-    STATUS_SUCCESS: userId
-  }
-
-def login_response_success(userId: str):
-  return {
-    STATUS_SUCCESS: userId
-  }
+  errorMessage: str | None = None

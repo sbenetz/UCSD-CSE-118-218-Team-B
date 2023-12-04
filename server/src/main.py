@@ -20,16 +20,16 @@ async def root() -> str:
 async def new_account(data: Credentials) -> UserId:
   (userId, errorMessage) = database.create_account(data)
   return {
-    "status": errorMessage,
-    "userId": userId
+    "userId": userId,
+    "errorMessage": errorMessage
   }
   
 @app.post("/user/login")
 async def user_login(data: Credentials) -> UserId:
   (userId, errorMessage) = database.login(data)
   return {
-    "status": errorMessage,
-    "userId": userId
+    "userId": userId,
+    "errorMessage": errorMessage
   }
   
 
