@@ -15,10 +15,9 @@ To build & run for the **production** API server:
 ```
 
 ## Access API Servers
-These are subject to change if the Ngrok service on the Raspberry Pi gets restarted
 ### Production
-Endpoint: https://2638-2603-8001-8d00-7e27-00-19c9.ngrok-free.app
-### Development
-Endpoint: https://1392-2603-8001-8d00-7e27-00-19c9.ngrok-free.app
+Endpoint: https://fit-glowworm-promptly.ngrok-free.app
+### Development 
+Endpoint (subject to change): https://2ea4-70-95-163-60.ngrok-free.app
 ### API Documentation
 For each endpoint, the endpoint's API documentation is accessible with `<endpoint>/redoc`

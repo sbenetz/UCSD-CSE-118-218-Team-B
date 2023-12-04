@@ -11,6 +11,16 @@ Changes:
   - Copied authorized_keys file from cse118 user to root directory as well
 - set `PasswordAuthentication no` in `/etc/ssh/sshd_config` in order to disable ssh login via password
 
+### Working with SSH
+Check sshd status:
+```sh
+sudo systemctl status ssh
+```
+View ssh logs:
+```sh
+journalctl -fu ssh
+```
+
 ## Ngrok on Raspberry Pi
 ### Setup
 Install Ngrok:
@@ -21,7 +31,7 @@ Add your authtoken to the default ngrok.yml configuration file:
 ```sh
 ngrok config add-authtoken <TOKEN>
 ```
-Add logging & tunnels configuration to Ngrok config file (`~/.config/ngrok/ngork.yml`):
+Add logging & tunnels configuration to Ngrok config file (`/root/.config/ngrok/ngork.yml`):
 ```yml
 version: "2"
 authtoken: <YOUR-AUTH-TOKEN>
@@ -39,19 +49,34 @@ tunnels:
   prod-api:
     proto: http
     addr: 8000
+    domain: <domain-name-to-use>
 ```
 
-### Start Ngrok Service
-Start Ngrok service to run continually with the above tunnels:
+### Setup Ngrok Service to start at reboot
+Create script that starts the ngrok service:
 ```sh
-nohup ngrok start --all --config="/root/.config/ngrok/ngrok.yml" &
+nano /root/.config/ngrok/start-ngrok.sh
 ```
-Note: after running, 'ctrl+c' in order to allow further commands to be entered into terminal.
+Copy and paste the below into the file (starts Ngrok service to run continuall in the background):
+```sh
+#!/bin/bash
+nohup ngrok start --all --config="/root/.config/ngrok/ngrok.yml" & > nohup.out 2>&1
+```
+Add permission to execute to the script:
+```sh
+chmod +x /root/.config/ngrok/start-ngrok.sh
+```
+Setup the above script to run at reboot:
+```sh
+crontab -e
+```
+Add the following line:
+```
+@reboot /root/.config/ngrok/start-ngrok.sh
+```
+Reboot the PI
 
-Check log file for the URLs to access the tunnels:
-```sh
-cat ~/.config/ngrok/ngrok.log
-```
+Check https://dashboard.ngrok.com/cloud-edge/endpoints for the URLs to access your endpoints
 
 **Ex: Connect to SSH Server**
 

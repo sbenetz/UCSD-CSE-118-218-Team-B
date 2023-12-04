@@ -1,9 +1,10 @@
 #!/bin/bash
+# Updates server after a build
 # USAGE: port_number is the port to run the server on
 USAGE="Usage: $0 <port_number>"
 
 SRC_DIR=src
-LOG_FILE=output.log 
+SCRIPTS_DIR=server_scripts
 
 # -- Parse Cmd Line Arguments --
 if [ "$#" -ne 1 ]; then
@@ -30,16 +31,6 @@ unzip ${SRC_DIR}.zip
 rm ${SRC_DIR}.zip
 
 # -- Running Server --
-echo "Running the server"
-# Activate Python environment
-source env/bin/activate
-
-# Start the server
-cd ${SRC_DIR}
-nohup uvicorn main:app --port ${API_SERVER_PORT} > ${LOG_FILE} 2>&1 &
-
-# Monitor Server Output
-tail -f ${LOG_FILE}
-
+./runServer.sh $API_SERVER_PORT
 
 
