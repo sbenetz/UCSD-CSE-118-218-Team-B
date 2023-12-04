@@ -7,7 +7,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 const ImagePickerPlaceholder = ({ onImagePicked }) => {
     const [imageUrl, setImageUrl] = useState(require('../assets/image_placeholder.jpg'));
 
-
     const pickImmage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -58,7 +57,6 @@ const DatePickerPlaceholder = ({ onDatePicked }) => {
             onDatePicked(currentDate);
         }
     };
-
 
     return (
         <View>
@@ -233,7 +231,6 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: 'bold',
         textAlign: 'center',
-
     },
 
     header: {

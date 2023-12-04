@@ -78,7 +78,7 @@ const Home = () => {
           style={styles.fab}
           small
           icon="plus"
-          onPress={() => navigation.navigate('Connect Device to Wifi')}
+          onPress={() => navigation.navigate('AddPlant')}
         />
 
       </ImageBackground>
