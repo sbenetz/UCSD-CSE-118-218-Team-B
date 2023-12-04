@@ -22,4 +22,4 @@ cd ${SRC_DIR}
 nohup uvicorn main:app --port ${API_SERVER_PORT} > ${LOG_FILE} 2>&1 &
 
 # Monitor Server Output
-tail -f ${LOG_FILE}
+cat ${LOG_FILE}

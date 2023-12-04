@@ -31,29 +31,33 @@ Add your authtoken to the default ngrok.yml configuration file:
 ```sh
 ngrok config add-authtoken <TOKEN>
 ```
-Add logging & tunnels configuration to Ngrok config file (`/root/.config/ngrok/ngork.yml`):
+Add logging & tunnels configuration to Ngrok config file (`/root/.config/ngrok/ngork.yml`). Example:
 ```yml
 version: "2"
-authtoken: <YOUR-AUTH-TOKEN>
+authtoken: <YOUR-AUTHENTICATION-TOKEN>
 
 log_level: info
 log: /root/.config/ngrok/ngrok.log
 
 tunnels:
-  ssh-server:
-    proto: tcp
-    addr: 22
   test-api:
-    proto: http
     addr: 8001
-  prod-api:
+    inspect: false
+    schemes:
+      - http
     proto: http
+
+  prod-api:
     addr: 8000
-    domain: <domain-name-to-use>
+    proto: http
+    inspect: false
+    schemes:
+      - http
+    domain: <YOUR-DOMAIN>
 ```
 
-### Setup Ngrok Service to start at reboot
-Create script that starts the ngrok service:
+### Setup Ngrok Service to start on startup
+**Create script that starts the ngrok service**
 ```sh
 nano /root/.config/ngrok/start-ngrok.sh
 ```
@@ -66,28 +70,17 @@ Add permission to execute to the script:
 ```sh
 chmod +x /root/.config/ngrok/start-ngrok.sh
 ```
-Setup the above script to run at reboot:
+**Setup the above script to run at reboot**
 ```sh
-crontab -e
+nano /etc/rc.local
 ```
-Add the following line:
-```
-@reboot /root/.config/ngrok/start-ngrok.sh
+Add the following line & save:
+```sh
+/root/.config/ngrok/start-ngrok.sh
 ```
 Reboot the PI
 
 Check https://dashboard.ngrok.com/cloud-edge/endpoints for the URLs to access your endpoints
-
-**Ex: Connect to SSH Server**
-
-`ngrok.log` output:
-```log
-t=2023-11-28T21:31:55-0800 lvl=info msg="started tunnel" obj=tunnels name=ssh-server addr=//localhost:22 url=tcp://8.tcp.us-cal-1.ngrok.io:12976
-```
-Then Client SSH Command:
-```sh
-ssh root@8.tcp.us-cal-1.ngrok.io -p 12976
-```
 
 **Ex: Connect to Production API Sever**
 `ngrok.log` output:
