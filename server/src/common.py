@@ -10,9 +10,22 @@ PATH_TO_DB = f"../{DB_DIRECTORY}/{DB_FILE_NAME}"
 
 
 # - POST Request Bodies -
-class Account(BaseModel):
+class Credentials(BaseModel):
   username: str
   password: str
+
+class DeviceInit(BaseModel):
+  userId: str
+  plantName: str
+  plantType: int
+
+class DeviceCheckIn(BaseModel):
+  deviceId: str
+  soilMoisture: int
+  sunlight: int
+
+class DeviceCredentials(BaseModel):
+  deviceId: str
 
 # - Response Bodies -
 STATUS_SUCCESS = 'success'
@@ -32,3 +45,7 @@ def login_response_success(userId: str):
   return {
     STATUS_SUCCESS: userId
   }
+
+class DeviceId(BaseModel):
+  status: str
+  deviceId: str 
