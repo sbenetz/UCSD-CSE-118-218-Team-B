@@ -13,24 +13,24 @@ database = Database(PATH_TO_DB)
 
 # Define API Rules
 @app.get("/")
-async def root():
-  return {"info": "Smart Plant Water Server"}
+async def root() -> str:
+  return "Smart Plant Waterer API Server"
 
 @app.post("/user/new-account")
-async def new_account(data: Credentials):
+async def new_account(data: Credentials) -> UserId:
   (userId, errorMessage) = database.create_account(data)
-  if errorMessage:
-    return response_error(errorMessage)
-  else:
-    return create_account_response_success(userId)
+  return {
+    "status": errorMessage,
+    "userId": userId
+  }
   
 @app.post("/user/login")
-async def user_login(data: Credentials):
+async def user_login(data: Credentials) -> UserId:
   (userId, errorMessage) = database.login(data)
-  if errorMessage:
-    return response_error(errorMessage)
-  else:
-    return login_response_success(userId)
+  return {
+    "status": errorMessage,
+    "userId": userId
+  }
   
 
 @app.post("/device/initialization")

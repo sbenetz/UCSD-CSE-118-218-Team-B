@@ -28,6 +28,10 @@ class DeviceCredentials(BaseModel):
   deviceId: str
 
 # - Response Bodies -
+class UserId(BaseModel):
+  status: str | None = None
+  userId: str | None = None
+
 STATUS_SUCCESS = 'success'
 STATUS_ERROR = 'error'
 
@@ -45,7 +49,3 @@ def login_response_success(userId: str):
   return {
     STATUS_SUCCESS: userId
   }
-
-class DeviceId(BaseModel):
-  status: str
-  deviceId: str 
