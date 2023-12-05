@@ -44,7 +44,8 @@ async def user_get_plants(userId) -> PlantsReturn:
 @app.get("/plants/{plantId}")
 async def get_plant(plantId) -> PlantInfoReturn:
   (sensorDataLogs, errorMessage) = database.get_plant_sensor_data_logs(plantId)
-  plantInfo = PlantInfoReturn(sensorDataLogs=sensorDataLogs, waterHistory=[], errorMessage=errorMessage)
+  (waterHistory, errorMessage) = database.get_plant_water_history(plantId)
+  plantInfo = PlantInfoReturn(sensorDataLogs=sensorDataLogs, waterHistory=waterHistory, errorMessage=errorMessage)
   return plantInfo
   
 
@@ -65,4 +66,5 @@ async def device_checkin(data: DeviceCheckIn) -> int:
 
 @app.post("/device/water-confirmation")
 async def device_water_confirm(data: DeviceCredentials) -> str:
+  database.device_water_confirm(data)
   return "ok"

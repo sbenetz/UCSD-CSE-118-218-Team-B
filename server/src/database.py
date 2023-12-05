@@ -33,6 +33,13 @@ class LOGS:
   SOIL_MOISTURE = 'soilMoisture'
   SUNLIGHT = 'sunlight'
 
+class WATER_LOGS:
+  TABLE_NAME = 'waterLogs'
+  # column names
+  LOG_ID = 'logId'
+  DEVICE_ID = 'deviceId'
+  TIMESTAMP = 'timestamp'
+
 
 class Database:
   # -- Public Methods --
@@ -100,13 +107,11 @@ class Database:
     plants = []
     row = result.fetchone()
     while row is not None:
-      print(row)
       plant = Plant(
         plantId=row[DEVICES.DEVICE_ID], 
         plantName=row[DEVICES.PLANT_NAME], 
         plantType=row[DEVICES.PLANT_TYPE]
       )
-      print(plant)
       plants.append(plant)
       row = result.fetchone()
 
@@ -128,17 +133,37 @@ class Database:
     sensor_logs = []
     row = result.fetchone()
     while row is not None:
-      print(row)
       sensorLog = SensorDataLog(
         timestamp=row[LOGS.TIMESTAMP], 
         soilMoisture=row[LOGS.SOIL_MOISTURE], 
         sunlight=row[LOGS.SUNLIGHT]
       )
-      print(sensorLog)
       sensor_logs.append(sensorLog)
       row = result.fetchone()
 
     return (sensor_logs, None)
+  
+  def get_plant_water_history(self, plantId) -> List[str]:
+    """Return a list of the timestamps for when the given plant was watered.
+    Returns: (list_of_timestamps, None) on success, (None, errorMessage) on failure"""
+    deviceId = plantId
+
+    # Verify deviceId exists
+    if not self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, deviceId):
+      return (None, "deviceId does not exist in devices table")
+    
+    # Get device's sensor data logs
+    result = self.__get_water_history(deviceId)
+
+    # Format Data
+    water_history = []
+    row = result.fetchone()
+    while row is not None:
+      timestamp = row[WATER_LOGS.TIMESTAMP]
+      water_history.append(timestamp)
+      row = result.fetchone()
+
+    return (water_history, None)
 
   # -- DEVICE <-> SERVER --
   def device_init(self, data: DeviceInit) -> str:
@@ -167,6 +192,20 @@ class Database:
     # Add entry to deviceLogs table
     self.__insert_device_logs(data.deviceId, data.soilMoisture, data.sunlight)
     return
+  
+  def device_water_confirm(self, data: DeviceCredentials) -> None:
+    """Log timestamp to waterLogs for the given device"""
+    
+    # Verify device Id exists
+    if not self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, data.deviceId):
+      print("DeviceWaterConfirm Error: deviceId does not exists in devices table")
+      return
+    
+    # Add entry to waterLogs table
+    self.__insert_water_logs(data.deviceId)
+    return
+    
+
 
 
   # -- Helper Methods -- 
@@ -212,6 +251,12 @@ class Database:
     self.cursor.execute(f"INSERT INTO {LOGS.TABLE_NAME} ({LOGS.DEVICE_ID}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT}) VALUES (?, ?, ?)", params)
     self.connection.commit()
 
+  def __insert_water_logs(self, deviceId):
+    """insert new row into waterLogs table"""
+    params = (deviceId,)
+    self.cursor.execute(f"INSERT INTO {WATER_LOGS.TABLE_NAME} ({WATER_LOGS.DEVICE_ID}) VALUES (?)", params)
+    self.connection.commit()
+
   def __get_user_plants(self, userId):
     """returns the plants for a user"""
     params = (userId,)
@@ -222,6 +267,12 @@ class Database:
     """returns the sensor data logs for a device"""
     params = (deviceId,)
     result = self.cursor.execute(f"SELECT {LOGS.TIMESTAMP}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT} FROM {LOGS.TABLE_NAME} WHERE {LOGS.DEVICE_ID} = ?", params)
+    return result 
+  
+  def __get_water_history(self, deviceId):
+    """returns the water log timestamps for a device"""
+    params = (deviceId,)
+    result = self.cursor.execute(f"SELECT {WATER_LOGS.TIMESTAMP} FROM {WATER_LOGS.TABLE_NAME} WHERE {WATER_LOGS.DEVICE_ID} = ?", params)
     return result 
 
  # -- Other Helper Methods
