@@ -33,9 +33,9 @@ async def user_login(data: Credentials) -> UserId:
     "errorMessage": errorMessage
   }
 
-@app.get("/user/{user_id}/plants")
-async def user_get_plants(user_id) -> PlantsReturn:
-  (plants, errorMessage) = database.get_plants(user_id)
+@app.get("/user/{userId}/plants")
+async def user_get_plants(userId) -> PlantsReturn:
+  (plants, errorMessage) = database.get_plants(userId)
   return {
     "plants": plants,
     "errorMessage": errorMessage

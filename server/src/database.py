@@ -78,7 +78,29 @@ class Database:
   def get_plants(self, userId) -> (List[Plant], str):
     """Return a list of all the plants for the given user.
     Returns: (list_of_plants, None) on success, (None, errorMessage) on failure"""
-    return (None, None)
+
+    # Verify userId exists
+    if not self.__exists(USERS.TABLE_NAME, USERS.USER_ID, userId):
+      return (None, "userId does not exist in users table")
+    
+    # Get user's plants
+    result = self.__get_user_plants(userId)
+
+    # Format Data
+    plants = []
+    row = result.fetchone()
+    while row is not None:
+      print(row)
+      plant = Plant(
+        plantId=row[DEVICES.DEVICE_ID], 
+        plantName=row[DEVICES.PLANT_NAME], 
+        plantType=row[DEVICES.PLANT_TYPE]
+      )
+      print(plant)
+      plants.append(plant)
+      row = result.fetchone()
+
+    return (plants, None)
 
 
   # -- DEVICE <-> SERVER --
@@ -133,6 +155,12 @@ class Database:
     params = (deviceId, userId, plantName, plantType)
     self.cursor.execute(f"INSERT INTO {DEVICES.TABLE_NAME} VALUES (?, ?, ?, ?)", params)
     self.connection.commit()
+
+  def __get_user_plants(self, userId):
+    """returns the plants for a user"""
+    params = (userId,)
+    result = self.cursor.execute(f"SELECT {DEVICES.DEVICE_ID}, {DEVICES.PLANT_NAME}, {DEVICES.PLANT_TYPE} FROM {DEVICES.TABLE_NAME} WHERE {DEVICES.USER_ID} = ?", params)
+    return result 
 
  # -- Other Helper Methods
 def generate_id(length):
