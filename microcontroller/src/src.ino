@@ -25,7 +25,7 @@ void loop()
   if (i < ARRAY_SIZE)
   {
     soilReadingHistory[i] = (uint8_t)((double)(soil_moisture_max - readSoilMoisture()) / (double)(soil_moisture_max - soil_moisture_min) * 100.0);
-    sunlightReadingHistory[i] = (uint32_t)readLightLevel();
+    sunlightReadingHistory[i] = readLightLevel();
     i++;
   }
   else

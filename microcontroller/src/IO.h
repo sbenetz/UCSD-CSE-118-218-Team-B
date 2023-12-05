@@ -70,15 +70,16 @@ uint32_t readSoilMoisture()
 
 /**
  * @brief Read light level from sensor
- * @return Light level in lux (0.0 ~ 54612)
+ * @return Light level in lux (0 ~ 54612)
  * 	   0 : no valid return value
  */
 uint32_t readLightLevel()
 {
-    if (int level = lightMeter.readLightLevel() > 0)
-        return (uint32_t)level;
+    float light = lightMeter.readLightLevel();
+    if (light > 0)
+        return (uint32_t)light;
     else
-        return 0;
+        return uint32_t(0);
 }
 /**
  * @brief Turn on the water pump
@@ -87,10 +88,10 @@ uint32_t readLightLevel()
  */
 void waterPumpOn(uint time_ms)
 {
-    digitalWrite(WATER_PUMP_VCC, HIGH);
+    // digitalWrite(WATER_PUMP_VCC, HIGH);
     digitalWrite(WATER_PUMP_SIG, HIGH);
     delay(time_ms);
-    digitalWrite(WATER_PUMP_VCC, LOW);
+    // digitalWrite(WATER_PUMP_VCC, LOW);
     digitalWrite(WATER_PUMP_SIG, LOW);
 }
 
@@ -115,7 +116,7 @@ void IOBegin()
     pinMode(WATER_PUMP_SIG, OUTPUT);
     // initalize pin values
     digitalWrite(WATER_PUMP_GND, LOW);
-    digitalWrite(WATER_PUMP_VCC, LOW);
+    digitalWrite(WATER_PUMP_VCC, HIGH);
     digitalWrite(WATER_PUMP_SIG, LOW);
     digitalWrite(SOIL_SENSOR_VCC, HIGH);
     digitalWrite(SOIL_SENSOR_GND, LOW);
