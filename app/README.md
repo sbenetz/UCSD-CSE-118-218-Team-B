@@ -9,3 +9,7 @@ All projects created in Snack are publicly available, so you can easily share th
 If you're having problems, you can tweet to us [@expo](https://twitter.com/expo) or ask in our [forums](https://forums.expo.dev/c/expo-dev-tools/61) or [Discord](https://chat.expo.dev/).
 
 Snack is Open Source. You can find the code on the [GitHub repo](https://github.com/expo/snack).
+
+BLE Library:
+https://www.npmjs.com/package/react-native-ble-plx
+https://stackoverflow.com/questions/71889306/what-is-the-workflow-for-developing-expo-apps-that-use-bluetooth

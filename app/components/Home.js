@@ -1,4 +1,4 @@
-import { Text, Image, ScrollView, View, TouchableOpacity, ImageBackground, StyleSheet, FlatList} from 'react-native';
+import { Text, Image, ScrollView, View, TouchableOpacity, ImageBackground, StyleSheet, FlatList } from 'react-native';
 import { FAB } from "react-native-paper";
 import { useNavigation } from '@react-navigation/native';
 
@@ -52,7 +52,7 @@ const Home = () => {
     navigation.navigate('PlantProfile', { plantId: plant.id });
   }
 
-  
+
   const renderPlant = ({ item, index }) => {
     const isEven = index % 2 === 0;
     const imageStyle = isEven ? styles.leftImage : styles.rightImage;
@@ -64,34 +64,34 @@ const Home = () => {
     );
   };
 
-  
+
   return (
-  
-      <View style={styles.container} >
-        <ImageBackground
-          source = {require('../assets/add_bar_background.jpg')}
-          resizeMode = "cover"
-          imageStyle={{borderRadius: 10}}
-          style = {styles.imageBackground}
-        >
-          <FAB
-            style={styles.fab}
-            small
-            icon="plus"
-            onPress={() => navigation.navigate('AddPlant')}
-          />
 
-        </ImageBackground>
-
-        <Text style={{fontSize: 28, fontWeight: 'bold', textAlign:'left'}}>My Plants</Text>
-        <FlatList
-          data={plants}
-          renderItem={renderPlant}
-          keyExtractor={item => item.id}
-          numColumns={2}
-          contentContainerStyle={styles.list}
+    <View style={styles.container} >
+      <ImageBackground
+        source={require('../assets/add_bar_background.jpg')}
+        resizeMode="cover"
+        imageStyle={{ borderRadius: 10 }}
+        style={styles.imageBackground}
+      >
+        <FAB
+          style={styles.fab}
+          small
+          icon="plus"
+          onPress={() => navigation.navigate('connectBluetooth')}
         />
-      </View>
+
+      </ImageBackground>
+
+      <Text style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'left' }}>My Plants</Text>
+      <FlatList
+        data={plants}
+        renderItem={renderPlant}
+        keyExtractor={item => item.id}
+        numColumns={2}
+        contentContainerStyle={styles.list}
+      />
+    </View>
 
   )
 }
@@ -142,14 +142,14 @@ const styles = StyleSheet.create({
 
   leftImage: {
     flex: 1,
-    marginRight: 10, 
-    marginBottom: 10, 
+    marginRight: 10,
+    marginBottom: 10,
   },
 
   rightImage: {
     flex: 1,
-    marginLeft: 20, 
-    marginBottom: 10, 
+    marginLeft: 20,
+    marginBottom: 10,
   },
 
 });

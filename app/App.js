@@ -10,7 +10,7 @@ import { Card } from 'react-native-paper';
 import Home from './components/Home';
 import addPlant from './components/addPlant';
 import PlantProfile from './components/PlantProfile';
-
+import SelectBluetooth from './components/connectBluetooth';
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -20,6 +20,7 @@ export default function App() {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="AddPlant" component={addPlant} />
         <Stack.Screen name="PlantProfile" component={PlantProfile} />
+        <Stack.Screen name="connectBluetooth" component={SelectBluetooth} />
       </Stack.Navigator>
     </NavigationContainer>
   );
