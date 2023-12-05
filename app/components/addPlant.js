@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, View, Button, Image, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, View, Button, Image, Text, TextInput, Switch, TouchableOpacity, StyleSheet, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -7,6 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 const ImagePickerPlaceholder = ( { onImagePicked } ) => {
     const [imageUrl, setImageUrl] = useState(require('../assets/image_placeholder.jpg'));
 
+    
     const pickImmage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -48,36 +49,27 @@ const ImagePickerPlaceholder = ( { onImagePicked } ) => {
 
 const DatePickerPlaceholder = ( {onDatePicked} ) => {
     const [date, setDate] = useState(new Date());
-    const [show, setShow] = useState(false);
+
 
     const onChange = (event, selectedDate) => {
         const currentDate = selectedDate || date;
-        setShow(Platform.OS === 'ios');
         setDate(currentDate);
         if (onDatePicked) {
             onDatePicked(currentDate);
         }
     };
 
-    const showDatepicker = () => {      
-        setShow(true);
-    };
-
+  
     return (
         <View>
-            {/* <View style={styles.datePickerContainer}>
-                <Button onPress={showDatepicker} title="Select Date" />
-            </View> */}
-            {show && (
-                <DateTimePicker
-                    testID="dateTimePicker"
-                    value={date}
-                    mode="date"
-                    is24Hour={true}
-                    display="default"
-                    onChange={onChange}
-                />
-            )}
+            <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="date"
+                is24Hour={true}
+                display="default"
+                onChange={onChange}
+            />
         </View>
     );
 }
@@ -93,6 +85,9 @@ const AddPlant = ( { navigation } ) => {
     const [plantDate, setPlantDate] = useState('');
     const [plantType, setPlantType] = useState('');
     const [additionalInfo, setAdditionalInfo] = useState('');
+    const [wateringMode, setWateringMode] = useState(false);
+    const [wateringFrequency, setWateringFrequency] = useState('');
+    const [wateringAmount, setWateringAmount] = useState('');
 
     const savePlant = () => {
         // Save plant to database
@@ -101,30 +96,37 @@ const AddPlant = ( { navigation } ) => {
     };
 
     return(
-        <DismissKeyboard>
-            <KeyboardAvoidingView>
-                <ScrollView style={styles.container}>
-                    {/* <Text style={styles.title}>Add a Plant</Text> */}
 
+        <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : "height"}
+            style={styles.container}>
+
+            <ScrollView>
+
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        
+                <View style={styles.inner}>
                     <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} />
 
                     <View style={styles.inputRow}>
-                        <Text style={styles.label}>Name </Text>
-                        <TextInput
-                            style={styles.input}
-                            value={plantName}
-                            onChangeText={setPlantName}
-                            placeholder="Enter Plant Name"
-                        />
+                        <Text style={styles.header}>Name </Text>
+                            <TextInput
+                                style={styles.input}
+                                value={plantName}
+                                onChangeText={setPlantName}
+                                placeholder="Enter Plant Name"
+                            />
                     </View>
+                        
+                
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>Date </Text>
+                <View style={styles.inputRow}>
+                        <Text style={styles.header}>Date </Text>
                         <DatePickerPlaceholder onDatePicked={(date) => setPlantDate(date)} />
                     </View>
 
                     <View style={styles.row}>
-                        <Text style={styles.label}>Plant Type</Text>
+                        <Text style={styles.header}>Plant Type</Text>
                         <View style={styles.pickerContainer}>
                             <Picker
                                 selectedValue={plantType}
@@ -147,9 +149,9 @@ const AddPlant = ( { navigation } ) => {
                     </View>
 
 
-                    <Text style={styles.boldText}>Additional Information</Text>
+                    <Text style={styles.header}>Additional Information</Text>
                     <TextInput
-                        style={[ styles.additionalInfo]}
+                        style={styles.additionalInfo}
                         value={additionalInfo}
                         onChangeText={setAdditionalInfo}
                         placeholder="Enter Additional Info"
@@ -158,18 +160,42 @@ const AddPlant = ( { navigation } ) => {
                         scrollEnabled={true}
                     />
 
+                    <Text style={styles.header}>Plant Watering System</Text>
+                        <View style={styles.wateringSystem}>
+                           <View style={styles.row}>
+                                <Text style={styles.label}>Watering Mode</Text>
+                                <Switch
+                                    onValueChange={(value) => setWateringMode(value)}
+                                    value={wateringMode}
+                                />
+                            </View>
+
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Watering Frequency</Text>
+                            </View>
+                     
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Watering Amount</Text>
+                            </View>
+                        </View>
+
                     <TouchableOpacity style={styles.saveButton} onPress={savePlant}>
                         <Text style={styles.saveButtonText}>SAVE</Text>
                     </TouchableOpacity>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </DismissKeyboard>
+                </View>
+                
+            </TouchableWithoutFeedback>
+            </ScrollView>
+        </KeyboardAvoidingView>
     )
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+
+    inner: {
         backgroundColor: '#EDEFF2',
         padding: 20,
         paddingTop: 50,
@@ -199,12 +225,14 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: 'bold',
         textAlign: 'center',
+        
     },
 
-    boldText: {
+    header: {
         fontWeight: 'bold',
         marginBottom: 5,
         fontSize: 15,
+        marginRight: 10,
     },
 
     inputRow: {
@@ -214,7 +242,7 @@ const styles = StyleSheet.create({
     },
 
     label: {
-        fontSize: 15,
+        fontSize: 12,
         fontWeight: 'bold',
         marginRight: 10,
     },
@@ -223,7 +251,7 @@ const styles = StyleSheet.create({
         borderColor: '#ddd',
         backgroundColor: '#FFFFFF',
         padding: 5,
-        borderRadius: 3,
+        borderRadius: 5,
         flex: 1,
     },
 
@@ -251,6 +279,8 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
         backgroundColor: '#FFFFFF',
         borderRadius: 3,
+        padding: 5,
+        marginBottom: 10,
       },
 
     saveButton: {
