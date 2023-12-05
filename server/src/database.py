@@ -15,7 +15,13 @@ class USERS:
   PASSWORD = 'password'
 
 # DEVICES Table
-DEVICES_TABLE = 'devices'
+class DEVICES:
+  TABLE_NAME = 'devices'
+  # column names
+  DEVICE_ID = 'deviceId'
+  USER_ID = 'userId'
+  PLANT_NAME = 'plantName'
+  PLANT_TYPE = 'plantType'
 
 
 class Database:
@@ -29,7 +35,8 @@ class Database:
     self.cursor = self.connection.cursor()
 
 
-  def create_account(self, data: Credentials):
+  # -- PHONE <-> SERVER --
+  def create_account(self, data: Credentials) -> (str, str):
     """Create a new user account with the given credentials. Returns
     the userId for the newly created account.
     Returns: (userId, None) on success, (None, errorMessage) on failure"""
@@ -47,10 +54,10 @@ class Database:
     return (userId, None)
 
 
-  def login(self, data: Credentials):
+  def login(self, data: Credentials) -> (str, str):
     """Return the userId of the user with the given credentials.
     Returns: (userId, None) on success, (None, errorMessage) on failure"""
-    # TODO: Cleanse username and password
+    # TODO: Cleanse username and password?
     if not data.username: return (None, "invalid username")
     if not data.password: return (None, "invalid password")
 
@@ -67,22 +74,45 @@ class Database:
     
     # success
     return (user[USERS.USER_ID], None)
+  
+  def get_plants(self, userId) -> (List[Plant], str):
+    """Return a list of all the plants for the given user.
+    Returns: (list_of_plants, None) on success, (None, errorMessage) on failure"""
+    return (None, None)
+
+
+  # -- DEVICE <-> SERVER --
+  def device_init(self, data: DeviceInit) -> str:
+    """Initialize a new device with the given information, adding it's information to
+    the database, & return the unique ID created for the device.
+    Returns: deviceId on success, None on failure"""
+
+    # Verify userId exists
+    if not self.__exists(USERS.TABLE_NAME, USERS.USER_ID, data.userId):
+      print("DeviceInit Error: userId does not exist in users table")
+      return None
     
-
-  def device_init(self, data: DeviceInit):
-    return None
-
+    # Add new entry to Devices Table
+    deviceId = self.__generate_uniq_device_id()
+    self.__insert_devices(deviceId, data.userId, data.plantName, data.plantType)
+    return deviceId
 
   # -- Helper Methods -- 
   def __generate_uniq_user_id(self):
     """generates a unique user id"""
     GENERATION_LENGTH = 25
     userId = generate_id(GENERATION_LENGTH)
-    print(f'userId: {userId}')
     while self.__exists(USERS.TABLE_NAME, USERS.USER_ID, userId):
       userId = generate_id(GENERATION_LENGTH)
-      print(f'remade userId: {userId}')
-    return userId    
+    return userId  
+
+  def __generate_uniq_device_id(self):
+    """generates a unique device id"""
+    GENERATION_LENGTH = 25
+    deviceId = generate_id(GENERATION_LENGTH)
+    while self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, deviceId):
+      deviceId = generate_id(GENERATION_LENGTH)
+    return deviceId
 
   def __exists(self, tableName, columnName, value):
     """returns true if the value exists in the given table's column"""
@@ -96,6 +126,12 @@ class Database:
     """insert new row into users table"""
     params = (userId, username, password)
     self.cursor.execute(f"INSERT INTO {USERS.TABLE_NAME} VALUES (?, ?, ?)", params)
+    self.connection.commit()
+
+  def __insert_devices(self, deviceId, userId, plantName, plantType):
+    """insert new row into devices table"""
+    params = (deviceId, userId, plantName, plantType)
+    self.cursor.execute(f"INSERT INTO {DEVICES.TABLE_NAME} VALUES (?, ?, ?, ?)", params)
     self.connection.commit()
 
  # -- Other Helper Methods

@@ -9,6 +9,6 @@ CREATE TABLE devices (
   deviceId TEXT PRIMARY KEY, 
   userId TEXT NOT NULL,
   plantName TEXT NOT NULL,
-  plantType TEXT
+  plantType INTEGER
 );
 

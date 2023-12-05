@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 # -- Constants --
 # Database
@@ -30,4 +31,13 @@ class DeviceCredentials(BaseModel):
 # - Response Bodies -
 class UserId(BaseModel):
   userId: str | None = None
+  errorMessage: str | None = None
+
+class Plant(BaseModel):
+  plantId: str
+  plantName: str
+  plantType: str
+
+class PlantsReturn(BaseModel):
+  plants: List[Plant] | None = None
   errorMessage: str | None = None

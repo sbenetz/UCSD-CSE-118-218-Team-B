@@ -16,6 +16,7 @@ database = Database(PATH_TO_DB)
 async def root() -> str:
   return "Smart Plant Waterer API Server"
 
+# -- PHONE <-> SERVER --
 @app.post("/user/new-account")
 async def new_account(data: Credentials) -> UserId:
   (userId, errorMessage) = database.create_account(data)
@@ -31,16 +32,24 @@ async def user_login(data: Credentials) -> UserId:
     "userId": userId,
     "errorMessage": errorMessage
   }
+
+@app.get("/user/{user_id}/plants")
+async def user_get_plants(user_id) -> PlantsReturn:
+  (plants, errorMessage) = database.get_plants(user_id)
+  return {
+    "plants": plants,
+    "errorMessage": errorMessage
+  }
   
 
+# -- DEVICE <-> SERVER --
 @app.post("/device/initialization")
 async def device_initialization(data: DeviceInit) -> str:
   deviceId = database.device_init(data)
-  return "123-fake-device-id"
-  # if deviceId is None:
-  #   return ""
-  # else:
-  #   return "123-fake-device-id"
+  if deviceId is None:
+    return ""
+  else:
+    return deviceId
   
 @app.post("/device/check-in")
 async def device_checkin(data: DeviceCheckIn) -> int:
