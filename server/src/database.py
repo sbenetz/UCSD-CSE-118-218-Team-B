@@ -23,6 +23,16 @@ class DEVICES:
   PLANT_NAME = 'plantName'
   PLANT_TYPE = 'plantType'
 
+# DEVICE LOGS Table
+class LOGS:
+  TABLE_NAME = 'deviceLogs'
+  # column names
+  LOG_ID = 'logId'
+  DEVICE_ID = 'deviceId'
+  TIMESTAMP = 'timestamp'
+  SOIL_MOISTURE = 'soilMoisture'
+  SUNLIGHT = 'sunlight'
+
 
 class Database:
   # -- Public Methods --
@@ -118,6 +128,19 @@ class Database:
     deviceId = self.__generate_uniq_device_id()
     self.__insert_devices(deviceId, data.userId, data.plantName, data.plantType)
     return deviceId
+  
+  def device_check_in(self, data: DeviceCheckIn) -> None:
+    """Log soil moisture and sunlight information to the database for the device"""
+
+    # Verify device Id exists
+    if not self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, data.deviceId):
+      print("DeviceCheckIn Error: deviceId does not exists in devices table")
+      return
+    
+    # Add entry to deviceLogs table
+    self.__insert_device_logs(data.deviceId, data.soilMoisture, data.sunlight)
+    return
+
 
   # -- Helper Methods -- 
   def __generate_uniq_user_id(self):
@@ -154,6 +177,12 @@ class Database:
     """insert new row into devices table"""
     params = (deviceId, userId, plantName, plantType)
     self.cursor.execute(f"INSERT INTO {DEVICES.TABLE_NAME} VALUES (?, ?, ?, ?)", params)
+    self.connection.commit()
+
+  def __insert_device_logs(self, deviceId, soilMoisture, sunlight):
+    """insert new row into deviceLogs table"""
+    params = (deviceId, soilMoisture, sunlight)
+    self.cursor.execute(f"INSERT INTO {LOGS.TABLE_NAME} ({LOGS.DEVICE_ID}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT}) VALUES (?, ?, ?)", params)
     self.connection.commit()
 
   def __get_user_plants(self, userId):

@@ -53,6 +53,7 @@ async def device_initialization(data: DeviceInit) -> str:
   
 @app.post("/device/check-in")
 async def device_checkin(data: DeviceCheckIn) -> int:
+  database.device_check_in(data)
   return -1
 
 @app.post("/device/water-confirmation")
