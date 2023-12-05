@@ -111,7 +111,34 @@ class Database:
       row = result.fetchone()
 
     return (plants, None)
+  
+  def get_plant_sensor_data_logs(self, plantId) -> (List[SensorDataLog], str):
+    """Return a list of the sensor data longs for the plant (deviceId = plantId)
+    Returns: (list_of_sensor_data_logs, None) on success, (None, errorMessage) on failure"""
+    deviceId = plantId
 
+    # Verify deviceId exists
+    if not self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, deviceId):
+      return (None, "deviceId does not exist in devices table")
+    
+    # Get device's sensor data logs
+    result = self.__get_sensor_data_logs(deviceId)
+
+    # Format Data
+    sensor_logs = []
+    row = result.fetchone()
+    while row is not None:
+      print(row)
+      sensorLog = SensorDataLog(
+        timestamp=row[LOGS.TIMESTAMP], 
+        soilMoisture=row[LOGS.SOIL_MOISTURE], 
+        sunlight=row[LOGS.SUNLIGHT]
+      )
+      print(sensorLog)
+      sensor_logs.append(sensorLog)
+      row = result.fetchone()
+
+    return (sensor_logs, None)
 
   # -- DEVICE <-> SERVER --
   def device_init(self, data: DeviceInit) -> str:
@@ -189,6 +216,12 @@ class Database:
     """returns the plants for a user"""
     params = (userId,)
     result = self.cursor.execute(f"SELECT {DEVICES.DEVICE_ID}, {DEVICES.PLANT_NAME}, {DEVICES.PLANT_TYPE} FROM {DEVICES.TABLE_NAME} WHERE {DEVICES.USER_ID} = ?", params)
+    return result 
+  
+  def __get_sensor_data_logs(self, deviceId):
+    """returns the sensor data logs for a device"""
+    params = (deviceId,)
+    result = self.cursor.execute(f"SELECT {LOGS.TIMESTAMP}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT} FROM {LOGS.TABLE_NAME} WHERE {LOGS.DEVICE_ID} = ?", params)
     return result 
 
  # -- Other Helper Methods

@@ -41,3 +41,13 @@ class Plant(BaseModel):
 class PlantsReturn(BaseModel):
   plants: List[Plant] | None = None
   errorMessage: str | None = None
+
+class SensorDataLog(BaseModel):
+  timestamp: str
+  soilMoisture: int
+  sunlight: int
+
+class PlantInfoReturn(BaseModel):
+  sensorDataLogs: List[SensorDataLog]
+  waterHistory: List[str]
+  errorMessage: str | None = None

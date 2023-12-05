@@ -40,6 +40,12 @@ async def user_get_plants(userId) -> PlantsReturn:
     "plants": plants,
     "errorMessage": errorMessage
   }
+
+@app.get("/plants/{plantId}")
+async def get_plant(plantId) -> PlantInfoReturn:
+  (sensorDataLogs, errorMessage) = database.get_plant_sensor_data_logs(plantId)
+  plantInfo = PlantInfoReturn(sensorDataLogs=sensorDataLogs, waterHistory=[], errorMessage=errorMessage)
+  return plantInfo
   
 
 # -- DEVICE <-> SERVER --
@@ -54,6 +60,7 @@ async def device_initialization(data: DeviceInit) -> str:
 @app.post("/device/check-in")
 async def device_checkin(data: DeviceCheckIn) -> int:
   database.device_check_in(data)
+  # TODO: implement logic for if to water or not
   return -1
 
 @app.post("/device/water-confirmation")
