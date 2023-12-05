@@ -5,7 +5,6 @@ LOG_FILE=output.log
 API_SERVER_PORT=8000
 
 # -- Run Server --
-echo "Running the server"
 
 # Kill any process currently using API_SERVER_PORT if exists
 CURR_PROC_PID=$(lsof -i :${API_SERVER_PORT} | awk 'NR==2 {print $2}')
@@ -19,6 +18,7 @@ source env/bin/activate
 
 # Start the server
 cd ${SRC_DIR}
+echo "Running the server"
 nohup uvicorn main:app --port ${API_SERVER_PORT} > ${LOG_FILE} 2>&1 &
 
 # Monitor Server Output

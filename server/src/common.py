@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 # -- Constants --
 # Database
@@ -28,24 +29,25 @@ class DeviceCredentials(BaseModel):
   deviceId: str
 
 # - Response Bodies -
-STATUS_SUCCESS = 'success'
-STATUS_ERROR = 'error'
+class UserId(BaseModel):
+  userId: str | None = None
+  errorMessage: str | None = None
 
-def response_error(error_message: str):
-  return {
-    STATUS_ERROR: error_message
-  }
+class Plant(BaseModel):
+  plantId: str
+  plantName: str
+  plantType: str
 
-def create_account_response_success(userId: str):
-  return {
-    STATUS_SUCCESS: userId
-  }
+class PlantsReturn(BaseModel):
+  plants: List[Plant] | None = None
+  errorMessage: str | None = None
 
-def login_response_success(userId: str):
-  return {
-    STATUS_SUCCESS: userId
-  }
+class SensorDataLog(BaseModel):
+  timestamp: str
+  soilMoisture: int
+  sunlight: int
 
-class DeviceId(BaseModel):
-  status: str
-  deviceId: str 
+class PlantInfoReturn(BaseModel):
+  sensorDataLogs: List[SensorDataLog]
+  waterHistory: List[str]
+  errorMessage: str | None = None

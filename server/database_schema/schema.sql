@@ -1,14 +1,25 @@
 .mode columns
 .headers on
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   userId TEXT PRIMARY KEY, 
   username TEXT NOT NULL,
   password TEXT NOT NULL
 );
-CREATE TABLE devices (
+CREATE TABLE IF NOT EXISTS devices (
   deviceId TEXT PRIMARY KEY, 
   userId TEXT NOT NULL,
   plantName TEXT NOT NULL,
-  plantType TEXT
+  plantType INTEGER
 );
-
+CREATE TABLE IF NOT EXISTS deviceLogs (
+  logId INTEGER PRIMARY KEY AUTOINCREMENT,
+  deviceId TEXT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  soilMoisture INTEGER,
+  sunlight INTEGER
+);
+CREATE TABLE IF NOT EXISTS waterLogs (
+  logId INTEGER PRIMARY KEY AUTOINCREMENT,
+  deviceId TEXT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

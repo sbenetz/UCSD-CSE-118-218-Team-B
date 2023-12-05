@@ -13,39 +13,58 @@ database = Database(PATH_TO_DB)
 
 # Define API Rules
 @app.get("/")
-async def root():
-  return {"info": "Smart Plant Water Server"}
+async def root() -> str:
+  return "Smart Plant Waterer API Server"
 
+# -- PHONE <-> SERVER --
 @app.post("/user/new-account")
-async def new_account(data: Credentials):
+async def new_account(data: Credentials) -> UserId:
   (userId, errorMessage) = database.create_account(data)
-  if errorMessage:
-    return response_error(errorMessage)
-  else:
-    return create_account_response_success(userId)
+  return {
+    "userId": userId,
+    "errorMessage": errorMessage
+  }
   
 @app.post("/user/login")
-async def user_login(data: Credentials):
+async def user_login(data: Credentials) -> UserId:
   (userId, errorMessage) = database.login(data)
-  if errorMessage:
-    return response_error(errorMessage)
-  else:
-    return login_response_success(userId)
+  return {
+    "userId": userId,
+    "errorMessage": errorMessage
+  }
+
+@app.get("/user/{userId}/plants")
+async def user_get_plants(userId) -> PlantsReturn:
+  (plants, errorMessage) = database.get_plants(userId)
+  return {
+    "plants": plants,
+    "errorMessage": errorMessage
+  }
+
+@app.get("/plants/{plantId}")
+async def get_plant(plantId) -> PlantInfoReturn:
+  (sensorDataLogs, errorMessage) = database.get_plant_sensor_data_logs(plantId)
+  (waterHistory, errorMessage) = database.get_plant_water_history(plantId)
+  plantInfo = PlantInfoReturn(sensorDataLogs=sensorDataLogs, waterHistory=waterHistory, errorMessage=errorMessage)
+  return plantInfo
   
 
+# -- DEVICE <-> SERVER --
 @app.post("/device/initialization")
 async def device_initialization(data: DeviceInit) -> str:
   deviceId = database.device_init(data)
-  return "123-fake-device-id"
-  # if deviceId is None:
-  #   return ""
-  # else:
-  #   return "123-fake-device-id"
+  if deviceId is None:
+    return ""
+  else:
+    return deviceId
   
 @app.post("/device/check-in")
 async def device_checkin(data: DeviceCheckIn) -> int:
+  database.device_check_in(data)
+  # TODO: implement logic for if to water or not
   return -1
 
 @app.post("/device/water-confirmation")
 async def device_water_confirm(data: DeviceCredentials) -> str:
+  database.device_water_confirm(data)
   return "ok"
