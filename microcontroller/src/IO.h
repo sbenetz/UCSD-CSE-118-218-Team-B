@@ -116,7 +116,7 @@ void IOBegin()
     pinMode(WATER_PUMP_SIG, OUTPUT);
     // initalize pin values
     digitalWrite(WATER_PUMP_GND, LOW);
-    digitalWrite(WATER_PUMP_VCC, HIGH);
+    digitalWrite(WATER_PUMP_VCC, LOW);
     digitalWrite(WATER_PUMP_SIG, LOW);
     digitalWrite(SOIL_SENSOR_VCC, HIGH);
     digitalWrite(SOIL_SENSOR_GND, LOW);
