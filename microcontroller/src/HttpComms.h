@@ -13,20 +13,17 @@
  * @param plant_type_id what type of plant this is
  * @return device ID returned from server, empty if failed
  */
-String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id)
+String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id, uint8_t plant_size)
 {
     HTTPClient http;
     WiFiClient client;
-    // client.setCACert(CERTIFICATE);
-    //  client.setInsecure();
-    //  http.setReuse(true);
     if (!http.begin(client, SERVER_URL + String("device/initialization")))
     {
         Serial.println("Can't reach server");
         return "";
     }
     http.addHeader("Content-Type", "application/json");
-    String post_body = "{\"userId\":\"" + user_id + "\",\"plantName\":\"" + plant_name + "\",\"plantType\":" + String(plant_type_id) + "}";
+    String post_body = "{\"userId\":\"" + user_id + "\",\"plantName\":\"" + plant_name + "\",\"plantType\":" + String(plant_type_id) + ",\"plantSize\":" + String(plant_size) + "}";
     Serial.println(post_body);
     int httpResponseCode = http.POST(post_body);
     String payload = http.getString();
@@ -55,8 +52,6 @@ int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlig
 {
     HTTPClient http;
     WiFiClient client;
-    // client.setCACert(CERTIFICATE);
-    //  http.setReuse(true);
     if (!http.begin(client, SERVER_URL + String("device/check-in")))
     {
         Serial.println("Can't reach server");

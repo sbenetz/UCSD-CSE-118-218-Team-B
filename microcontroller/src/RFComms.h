@@ -1,7 +1,5 @@
 #include <WiFi.h>
 #include <Preferences.h>
-#include <nvs.h>
-#include <nvs_flash.h>
 #include <ArduinoJson.h>
 // Includes for BLE
 #include <BLEUtils.h>
@@ -11,55 +9,50 @@
 
 #include "Credentials.h"
 
+#define BLUETOOTH_NAME "Plant Waterer"
+#define SERVICE_UUID "ab1fb9be-ce51-4b92-b0ec-f4ad17cafdda"
+#define CHARACTERISTIC_UUID "67148bf4-ce72-4540-83c0-fcbea11c06a5"
+#define STORAGE_NAME "device"
+
 String ssids_array[50];
-String network_string;
-String connected_string;
 Preferences preferences;
 
-const char *pref_ssid = "";
-const char *pref_pass = "";
 String client_wifi_ssid;
 String client_wifi_password;
 
-const char *bluetooth_name = "Plant Waterer";
+String userID = "OaVlxIFhjBzfm2hARNZwOugQm";
+String plantName = "greenie";
+uint16_t plantType = 1;
+uint8_t plantSize = 1; // 0=small, 1=medium, 2=large
+
 String deviceID;
 
 long start_wifi_millis;
 long wifi_timeout = 10000; // 10 sec timeout
 
-/** Flag if stored AP credentials are available */
-bool hasCredentials = false;
-/** Connection status */
-volatile bool isConnected = false;
-/** Connection change status */
-bool connStatusChanged = false;
+bool hasCredentials = false;       // If stored WiFi credentials are available
+volatile bool isConnected = false; // WiFi connection status
+bool connStatusChanged = false;    // Wifi connection change status
+bool hasDeviceProps = false;       // Received info about this device over bluetooth
 
-/** Characteristic for digital output */
-BLECharacteristic *pCharacteristicWiFi;
-/** BLE Advertiser */
-BLEAdvertising *pAdvertising;
-/** BLE Service */
-BLEService *pService;
-/** BLE Server */
-BLEServer *pServer;
+/** Bluetooth pointers */
+BLECharacteristic *pCharacteristicWiFi; // Characteristic for digital output
+BLEAdvertising *pAdvertising;           // BLE Advertiser
+BLEService *pService;                   // BLE Service
+BLEServer *pServer;                     // BLE Server
 
 StaticJsonDocument<200> jsonBuffer;
 
-#define SERVICE_UUID "ab1fb9be-ce51-4b92-b0ec-f4ad17cafdda"
-#define CHARACTERISTIC_UUID "67148bf4-ce72-4540-83c0-fcbea11c06a5"
-#define STORAGE_NAME "device"
-enum wifi_setup_stages
+enum setup_stages
 {
   NONE,
   SCANNING,
-  SSID_ENTERED,
-  WAIT_PASS,
-  PASS_ENTERED,
-  WAIT_CONNECT,
-  LOGIN_FAILED,
-  CONNECTED
+  WIFI_CONNECTED,
+  WIFI_FAILED,
+  REGISTERING_DEVICE,
+  SETUP_DONE
 };
-enum wifi_setup_stages wifi_stage = NONE;
+enum setup_stages setup_stage = NONE;
 
 String scan_wifi_networks()
 {
@@ -70,7 +63,7 @@ String scan_wifi_networks()
 
   String output;
   // Scan for networks
-  int16_t apNum = WiFi.scanNetworks(false, true, false, 1000);
+  int16_t apNum = WiFi.scanNetworks(false, false, false, 1000);
   if (apNum == 0)
   {
     Serial.println("Found no networks?????");
@@ -84,12 +77,35 @@ String scan_wifi_networks()
       ssids_array[i + 1] = WiFi.SSID(i);
       Serial.print(i + 1);
       Serial.print(": ");
-      Serial.println(ssids_array[i + 1]);
+      Serial.println(ssids_array[i + 1] + " (Strength:" + String(WiFi.RSSI(i)) + ")");
       output += String(i + 1);
-      output += network_string + ": " + WiFi.SSID(i) + " (Strength:" + WiFi.RSSI(i) + ")\n";
+      output += ": " + WiFi.SSID(i) + " (Strength:" + WiFi.RSSI(i) + ")\n";
     }
   }
   return output;
+}
+
+void wipeDevice()
+{
+  // erase all data
+  Serial.println("Received erase command");
+
+  preferences.begin(STORAGE_NAME, false);
+  preferences.clear();
+  preferences.end();
+  connStatusChanged = true;
+  hasCredentials = false;
+  hasDeviceProps = false;
+
+  memset(ssids_array, '\0', sizeof(ssids_array));
+  userID = "";
+  plantName = "";
+  plantType = 0;
+  plantSize = 0; // 0=small, 1=medium, 2=large
+
+  deviceID = "";
+  client_wifi_password = "";
+  client_wifi_ssid = "";
 }
 
 /**
@@ -151,28 +167,25 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
         Serial.println("primary SSID: " + client_wifi_ssid + " password: " + client_wifi_password);
         connStatusChanged = true;
         hasCredentials = true;
+        setup_stage = REGISTERING_DEVICE;
+      }
+      else if (data.containsKey("user_id") && data.containsKey("plant_name") && data.containsKey("plant_type") && data.containsKey("plant_size"))
+      {
+        userID = data["user_id"].as<String>();
+        plantName = data["plant_name"].as<String>();
+        plantSize = data["plant_size"].as<uint16_t>();
+        plantType = data["plant_type"].as<uint8_t>();
+        hasDeviceProps = true;
+        setup_stage = REGISTERING_DEVICE;
       }
       else if (data.containsKey("search_wifi"))
       {
-        wifi_stage = SCANNING;
+        setup_stage = SCANNING;
+        Serial.println("Starting WiFi Scan...");
       }
       else if (data.containsKey("erase"))
       {
-        Serial.println("Received erase command");
-
-        preferences.begin(STORAGE_NAME, false);
-        preferences.clear();
-        preferences.end();
-        connStatusChanged = true;
-        hasCredentials = false;
-        client_wifi_password = "";
-        client_wifi_ssid = "";
-
-        int err;
-        err = nvs_flash_init();
-        Serial.println("nvs_flash_init: " + err);
-        err = nvs_flash_erase();
-        Serial.println("nvs_flash_erase: " + err);
+        wipeDevice();
       }
       else if (data.containsKey("reset"))
       {
@@ -191,7 +204,7 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
   {
     Serial.println("BLE onRead request");
     String message;
-    switch (wifi_stage)
+    switch (setup_stage)
     {
     case (NONE):
       message = "Hello from Plant Waterer";
@@ -199,12 +212,12 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
     case (SCANNING):
       message = scan_wifi_networks();
       break;
-      // case (SCAN_COMPLETE):
-      // case (SSID_ENTERED):
-      // case (WAIT_PASS):
-      // case (PASS_ENTERED):
-      // case (WAIT_CONNECT):
-      // case (LOGIN_FAILED):
+    case (WIFI_CONNECTED):
+      message = "WiFi Connection is established";
+      break;
+    case (WIFI_FAILED):
+      message = "WiFi Connection failed";
+      break;
     }
     // /** Json object for outgoing data */
     // JsonObject& jsonOut = jsonBuffer.createObject();
@@ -231,7 +244,7 @@ void lostCon(WiFiEvent_t event)
   connStatusChanged = true;
 }
 
-bool init_wifi()
+void init_wifi()
 {
   // Setup callback function for successful connection
   WiFi.onEvent(gotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
@@ -242,18 +255,16 @@ bool init_wifi()
   WiFi.enableSTA(true);
   WiFi.mode(WIFI_STA);
   preferences.begin(STORAGE_NAME, true);
-  String temp_pref_ssid;
-  String temp_pref_pass;
+  String pref_ssid;
+  String pref_pass;
   if (preferences.isKey("pref_ssid") && preferences.isKey("pref_pass"))
   {
-    temp_pref_ssid = preferences.getString("pref_ssid");
-    temp_pref_pass = preferences.getString("pref_pass");
-    pref_ssid = temp_pref_ssid.c_str();
-    pref_pass = temp_pref_pass.c_str();
+    pref_ssid = preferences.getString("pref_ssid");
+    pref_pass = preferences.getString("pref_pass");
   }
   preferences.end();
 
-  if (strlen(pref_ssid) > 0)
+  if (pref_ssid.length() > 0)
   {
     Serial.println(pref_ssid);
     Serial.println(pref_pass);
@@ -272,15 +283,14 @@ bool init_wifi()
         Serial.println();
         Serial.println("Attempt timed out");
         WiFi.disconnect(true, true);
-        return false;
+        return;
       }
     }
-    return true;
+    Serial.println("\nConnected to " + pref_ssid);
   }
   else
   {
     Serial.println("No credentials stored.");
-    return false;
   }
 }
 
@@ -291,10 +301,8 @@ bool init_wifi()
 void initBLE()
 {
   // Initialize BLE and set output power
-  BLEDevice::init(bluetooth_name);
+  BLEDevice::init(BLUETOOTH_NAME);
   BLEDevice::setPower(ESP_PWR_LVL_P7);
-
-  // Create BLE Server
   pServer = BLEDevice::createServer();
   // Set server callbacks
   pServer->setCallbacks(new MyServerCallbacks());
@@ -303,13 +311,11 @@ void initBLE()
   // Create BLE Characteristic for WiFi settings
   pCharacteristicWiFi = pService->createCharacteristic(
       BLEUUID(CHARACTERISTIC_UUID),
-      // WIFI_UUID,
       BLECharacteristic::PROPERTY_READ |
           BLECharacteristic::PROPERTY_WRITE);
   pCharacteristicWiFi->setCallbacks(new MyCallbackHandler());
   // Start the service
   pService->start();
-  // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
   pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);
@@ -317,23 +323,30 @@ void initBLE()
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 }
-/**
- * @brief Start up the Bluetooth and WiFi communication streams for the device
- *
- */
+/// @brief Start up the Bluetooth and WiFi communication streams for the device
 void beginRFServices()
 {
   Serial.println("Booting Communications...");
-  preferences.begin(STORAGE_NAME, false);
-  // preferences.putString("pref_ssid", WIFI_SSID);
-  // preferences.putString("pref_pass", WIFI_PASS);
-  deviceID = preferences.getString("device_id");
-  bool connected = init_wifi();
-  if (deviceID.isEmpty() && connected)
+  if (esp_reset_reason() == ESP_RST_POWERON)
   {
-    deviceID = postNewDevice("shane", "greenie", 1);
-    Serial.println("Device ID set: " + deviceID);
-    preferences.putString("device_id", deviceID);
+    wipeDevice();
+  }
+  preferences.begin(STORAGE_NAME, false);
+  // preferences.putString("pref_ssid", WIFI_SSID); // temp fix for no bluetooth
+  // preferences.putString("pref_pass", WIFI_PASS); // temp fix for no bluetooth
+  deviceID = preferences.getString("device_id");
+  init_wifi();
+  // temp fix for no bluetooth
+  // if (deviceID.isEmpty() && isConnected)
+  // {
+  //   deviceID = postNewDevice(userID, plantName, 1, 1);
+  //   Serial.println("Device ID set: " + deviceID);
+  //   preferences.putString("device_id", deviceID);
+  // }
+  // else
+  if (!deviceID.isEmpty() && isConnected)
+  {
+    setup_stage = SETUP_DONE;
   }
   preferences.end();
   initBLE();
@@ -356,56 +369,18 @@ void inLoop()
     {
       if (hasCredentials)
       {
-        Serial.println("Lost WiFi connection");
-        // Received WiFi credentials
-        // if (!scanWiFi) { // Check for available AP's
-        // 	Serial.println("Could not find any AP");
-        // } else { // If AP was found, start connection
-        // 	connectWiFi();
-        // }
+        init_wifi();
       }
     }
     connStatusChanged = false;
   }
-
-  // switch (wifi_stage)
-  // {
-  //   case SCAN_START:
-  //     //SerialBT.println("Scanning Wi-Fi networks");
-  //     Serial.println("Scanning Wi-Fi networks");
-  //     scan_wifi_networks();
-  //     //SerialBT.println("Please enter the number for your Wi-Fi");
-  //     wifi_stage = SCAN_COMPLETE;
-  //     break;
-
-  //   case SSID_ENTERED:
-  //     SerialBT.println("Please enter your Wi-Fi password");
-  //     Serial.println("Please enter your Wi-Fi password");
-  //     wifi_stage = WAIT_PASS;
-  //     break;
-
-  //   case PASS_ENTERED:
-  //     SerialBT.println("Please wait for Wi-Fi connection...");
-  //     Serial.println("Please wait for Wi_Fi connection...");
-  //     wifi_stage = WAIT_CONNECT;
-  //     preferences.putString("pref_ssid", client_wifi_ssid);
-  //     preferences.putString("pref_pass", client_wifi_password);
-  //     if (init_wifi()) { // Connected to WiFi
-  //       connected_string = "ESP32 IP: ";
-  //       connected_string = connected_string + WiFi.localIP().toString();
-  //       SerialBT.println(connected_string);
-  //       Serial.println(connected_string);
-  //       bluetooth_disconnect = true;
-  //     } else { // try again
-  //       wifi_stage = LOGIN_FAILED;
-  //     }
-  //     break;
-
-  //   case LOGIN_FAILED:
-  //     SerialBT.println("Wi-Fi connection failed");
-  //     Serial.println("Wi-Fi connection failed");
-  //     delay(2000);
-  //     wifi_stage = SCAN_START;
-  //     break;
-  // }
+  if (setup_stage == REGISTERING_DEVICE && hasDeviceProps && isConnected)
+  {
+    deviceID = postNewDevice(userID, plantName, plantType, plantSize);
+    Serial.println("Device ID set: " + deviceID);
+    preferences.begin(STORAGE_NAME, false);
+    preferences.putString("device_id", deviceID);
+    preferences.end();
+    setup_stage = SETUP_DONE;
+  }
 }

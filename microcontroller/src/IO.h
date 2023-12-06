@@ -55,8 +55,69 @@ public:
     }
 };
 
+class Waterer
+{
+public:
+    bool on_ = false;
+    uint32_t period_;
+    long next_check_;
+    int goal_moisture_;
+    void begin()
+    {
+        pinMode(WATER_PUMP_GND, OUTPUT);
+        pinMode(WATER_PUMP_VCC, OUTPUT);
+        pinMode(WATER_PUMP_SIG, OUTPUT);
+        digitalWrite(WATER_PUMP_GND, LOW);
+        digitalWrite(WATER_PUMP_VCC, LOW);
+        digitalWrite(WATER_PUMP_SIG, LOW);
+    }
+    /**
+     * @brief Turn on the water pump
+     *
+     * @param time_ms how long to run pump for (ms)
+     */
+    void waterPumpOn(uint time_ms)
+    {
+        // digitalWrite(WATER_PUMP_VCC, HIGH);
+        digitalWrite(WATER_PUMP_SIG, HIGH);
+        delay(time_ms);
+        // digitalWrite(WATER_PUMP_VCC, LOW);
+        digitalWrite(WATER_PUMP_SIG, LOW);
+    }
+
+    void water(int current_moisture)
+    {
+        if (on_)
+        {
+            long now = millis();
+            if (now > next_check_)
+            {
+                if (current_moisture < goal_moisture_)
+                {
+                    // waterPumpOn(1000);
+                }
+                next_check_ = now + period_;
+                return;
+            }
+        }
+    }
+
+    void startWatering(int goal_moisture, uint32_t period = 20000 /*ms*/)
+    {
+        on_ = goal_moisture > 0;
+        goal_moisture_ = goal_moisture;
+        next_check_ = millis() + period;
+        period_ = period;
+    }
+    void stopWatering()
+    {
+        goal_moisture_ = -1;
+        on_ = false;
+    }
+};
 BH1750 lightMeter;
 OnboardLED builtinLED;
+Waterer waterer;
 
 /**
  * @brief Read the soil moisture
@@ -81,19 +142,6 @@ uint32_t readLightLevel()
     else
         return uint32_t(0);
 }
-/**
- * @brief Turn on the water pump
- *
- * @param time_ms how long to run pump for (ms)
- */
-void waterPumpOn(uint time_ms)
-{
-    // digitalWrite(WATER_PUMP_VCC, HIGH);
-    digitalWrite(WATER_PUMP_SIG, HIGH);
-    delay(time_ms);
-    // digitalWrite(WATER_PUMP_VCC, LOW);
-    digitalWrite(WATER_PUMP_SIG, LOW);
-}
 
 /**
  * @brief Declare pins and initialize their values
@@ -107,17 +155,13 @@ void IOBegin()
     lightMeter.begin();
     // startup onboard LED code
     builtinLED.begin();
+    // startup the water pump code
+    waterer.begin();
     // setup pins
     pinMode(SOIL_SENSOR_VCC, OUTPUT);
     pinMode(SOIL_SENSOR_GND, OUTPUT);
     pinMode(SOIL_SENSOR_SIG, ANALOG);
-    pinMode(WATER_PUMP_GND, OUTPUT);
-    pinMode(WATER_PUMP_VCC, OUTPUT);
-    pinMode(WATER_PUMP_SIG, OUTPUT);
     // initalize pin values
-    digitalWrite(WATER_PUMP_GND, LOW);
-    digitalWrite(WATER_PUMP_VCC, LOW);
-    digitalWrite(WATER_PUMP_SIG, LOW);
     digitalWrite(SOIL_SENSOR_VCC, HIGH);
     digitalWrite(SOIL_SENSOR_GND, LOW);
 }
