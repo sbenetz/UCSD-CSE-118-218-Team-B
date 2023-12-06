@@ -22,6 +22,7 @@ class DEVICES:
   USER_ID = 'userId'
   PLANT_NAME = 'plantName'
   PLANT_TYPE = 'plantType'
+  PLANT_SIZE = 'plantSize'
 
 # DEVICE LOGS Table
 class LOGS:
@@ -110,7 +111,8 @@ class Database:
       plant = Plant(
         plantId=row[DEVICES.DEVICE_ID], 
         plantName=row[DEVICES.PLANT_NAME], 
-        plantType=row[DEVICES.PLANT_TYPE]
+        plantType=row[DEVICES.PLANT_TYPE],
+        plantSize=row[DEVICES.PLANT_SIZE]
       )
       plants.append(plant)
       row = result.fetchone()
@@ -260,7 +262,7 @@ class Database:
   def __get_user_plants(self, userId):
     """returns the plants for a user"""
     params = (userId,)
-    result = self.cursor.execute(f"SELECT {DEVICES.DEVICE_ID}, {DEVICES.PLANT_NAME}, {DEVICES.PLANT_TYPE} FROM {DEVICES.TABLE_NAME} WHERE {DEVICES.USER_ID} = ?", params)
+    result = self.cursor.execute(f"SELECT {DEVICES.DEVICE_ID}, {DEVICES.PLANT_NAME}, {DEVICES.PLANT_TYPE}, {DEVICES.PLANT_SIZE} FROM {DEVICES.TABLE_NAME} WHERE {DEVICES.USER_ID} = ?", params)
     return result 
   
   def __get_sensor_data_logs(self, deviceId):

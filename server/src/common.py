@@ -37,7 +37,8 @@ class UserId(BaseModel):
 class Plant(BaseModel):
   plantId: str
   plantName: str
-  plantType: str
+  plantType: int
+  plantSize: int
 
 class PlantsReturn(BaseModel):
   plants: List[Plant] | None = None
