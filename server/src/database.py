@@ -178,7 +178,7 @@ class Database:
     
     # Add new entry to Devices Table
     deviceId = self.__generate_uniq_device_id()
-    self.__insert_devices(deviceId, data.userId, data.plantName, data.plantType)
+    self.__insert_devices(deviceId, data.userId, data.plantName, data.plantType, data.plantSize)
     return deviceId
   
   def device_check_in(self, data: DeviceCheckIn) -> None:
@@ -239,10 +239,10 @@ class Database:
     self.cursor.execute(f"INSERT INTO {USERS.TABLE_NAME} VALUES (?, ?, ?)", params)
     self.connection.commit()
 
-  def __insert_devices(self, deviceId, userId, plantName, plantType):
+  def __insert_devices(self, deviceId, userId, plantName, plantType, plantSize):
     """insert new row into devices table"""
-    params = (deviceId, userId, plantName, plantType)
-    self.cursor.execute(f"INSERT INTO {DEVICES.TABLE_NAME} VALUES (?, ?, ?, ?)", params)
+    params = (deviceId, userId, plantName, plantType, plantSize)
+    self.cursor.execute(f"INSERT INTO {DEVICES.TABLE_NAME} VALUES (?, ?, ?, ?, ?)", params)
     self.connection.commit()
 
   def __insert_device_logs(self, deviceId, soilMoisture, sunlight):

@@ -19,6 +19,7 @@ class DeviceInit(BaseModel):
   userId: str
   plantName: str
   plantType: int
+  plantSize: int # 0: sm, 1: md, 2: lg
 
 class DeviceCheckIn(BaseModel):
   deviceId: str
