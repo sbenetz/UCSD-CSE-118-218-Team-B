@@ -21,6 +21,7 @@ void setup()
 {
   Serial.begin(115200);
   IOBegin();
+  builtinLED.setBlinkOnboardLED(2, 200);
   beginRFServices();
 }
 
@@ -41,10 +42,10 @@ void loop()
     {
       uint32_t soil_average = getAverage(soilReadingHistory);
       uint32_t light_average = getAverage(sunlightReadingHistory);
-      Serial.printf("Soil_Moisture (%): %d, ", soil_average);
+      Serial.printf("Soil_Moisture (%%): %d, ", soil_average);
       Serial.printf("Soil Moisture (mV): %d, ", readSoilMoisture());
-      Serial.printf("Light_(lx): %d \n", light_average);
-      if (waterer.goal_moisture_ == -1) // only request new watering level if we don't have one
+      Serial.printf("Light Level (lx): %d \n", light_average);
+      if (!waterer.wateringOn()) // only request new watering level if we don't have one
       {
         waterer.startWatering(postSensorReadings(deviceID, soil_average, light_average));
       }

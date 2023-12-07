@@ -1,3 +1,5 @@
+#ifndef IO_H
+#define IO_H
 #include <Arduino.h>
 #include <Wire.h>
 #include <BH1750.h>
@@ -75,6 +77,10 @@ public:
         digitalWrite(WATER_PUMP_GND, LOW);
         digitalWrite(WATER_PUMP_SIG, LOW);
     }
+    bool wateringOn()
+    {
+        return on_;
+    }
     /**
      * @brief Turn on the water pump
      *
@@ -87,18 +93,18 @@ public:
         digitalWrite(WATER_PUMP_SIG, LOW);
     }
 
-    void handleWatering(int current_moisture)
+    void handleWatering(uint32_t current_moisture)
     {
         if (on_)
         {
             long now = millis();
             if (now > next_check_)
             {
-                if (current_moisture < goal_moisture_)
+                if ((int)current_moisture < goal_moisture_)
                 {
                     // 3s max
                     uint time = 300 * (goal_moisture_ - current_moisture);
-                    Serial.printf("Soil Moisture(%): %d < Watering Goal(%): %d\n", current_moisture, waterer.goal_moisture_);
+                    Serial.printf("Soil Moisture(%): %d < Watering Goal(%): %d\n", current_moisture, goal_moisture_);
                     Serial.printf("Watering for %d ms\n", time);
                     builtinLED.setBlinkOnboardLED(3);
                     waterPumpOn(time);
@@ -109,7 +115,7 @@ public:
                 }
                 else
                 {
-                    waterer.stopWatering();
+                    stopWatering();
                     Serial.printf("No watering necessary at this time. Sleeping for %d seconds\n", SLEEP_FOR);
                     esp_sleep_enable_timer_wakeup(SLEEP_FOR * uS_TO_S_FACTOR);
                     Serial.flush();
@@ -184,3 +190,4 @@ void IOBegin()
     digitalWrite(SOIL_SENSOR_VCC, HIGH);
     digitalWrite(SOIL_SENSOR_GND, LOW);
 }
+#endif

@@ -1,3 +1,5 @@
+#ifndef HTTP_COMMS_H
+#define HTTP_COMMS_H
 #include <WiFi.h>
 #include <HTTPClient.h>
 
@@ -87,3 +89,4 @@ int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlig
     else
         return -1;
 }
+#endif

@@ -1,3 +1,5 @@
+#ifndef RF_COMMS_H
+#define RF_COMMS_H
 #include <WiFi.h>
 #include <Preferences.h>
 #include <ArduinoJson.h>
@@ -8,6 +10,7 @@
 #include <BLEAdvertising.h>
 
 #include "HttpComms.h"
+#include "IO.h"
 
 #define BLUETOOTH_NAME "Plant Waterer"
 #define SERVICE_UUID "ab1fb9be-ce51-4b92-b0ec-f4ad17cafdda"
@@ -121,6 +124,7 @@ class MyServerCallbacks : public BLEServerCallbacks
   // TODO this doesn't take into account several clients being connected
   void onConnect(BLEServer *pServer)
   {
+    builtinLED.setBlinkOnboardLED(6, 200);
     Serial.println("BLE client connected");
   };
 
@@ -171,9 +175,8 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
         Serial.println("primary SSID: " + client_wifi_ssid + " password: " + client_wifi_password);
         connStatusChanged = true;
         hasCredentials = true;
-        setup_stage = REGISTERING_DEVICE;
       }
-      else if (data.containsKey("user_id") && data.containsKey("plant_name") && data.containsKey("plant_type") && data.containsKey("plant_size"))
+      else if (setup_stage == WIFI_CONNECTED && data.containsKey("user_id") && data.containsKey("plant_name") && data.containsKey("plant_type") && data.containsKey("plant_size"))
       {
         userID = data["user_id"].as<String>();
         plantName = data["plant_name"].as<String>();
@@ -224,6 +227,12 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
       break;
     case (WIFI_FAILED):
       message = "WiFi Connection failed";
+      break;
+    case (REGISTERING_DEVICE):
+      message = "Recieved necessary info. Attempting device registration.";
+      break;
+    case (SETUP_DONE):
+      message = "Device has been setup!";
       break;
     }
     // /** Json object for outgoing data */
@@ -289,10 +298,13 @@ void init_wifi()
       {
         Serial.println("\nAttempt timed out");
         WiFi.disconnect(true, true);
+        setup_stage = WIFI_FAILED;
         return;
       }
     }
     Serial.println("\nConnected to " + pref_ssid);
+    setup_stage = WIFI_CONNECTED;
+    builtinLED.setBlinkOnboardLED(5, 200);
   }
   else
   {
@@ -335,12 +347,16 @@ void beginRFServices()
   Serial.println("Booting Communications...");
   if (esp_reset_reason() == ESP_RST_POWERON)
   {
+    Serial.println("Reset button pressed");
     wipeDevice();
   }
   else
   {
     preferences.begin(STORAGE_NAME, false);
-    deviceID = preferences.getString("device_id");
+    if (preferences.isKey("device_id"))
+    {
+      deviceID = preferences.getString("device_id");
+    }
     preferences.end();
   }
   init_wifi();
@@ -354,6 +370,7 @@ void beginRFServices()
   }
 }
 
+/// @brief communications to do in the main loop
 void inLoop()
 {
   if (connStatusChanged)
@@ -364,7 +381,7 @@ void inLoop()
       Serial.print(WiFi.SSID());
       Serial.print(" with IP: ");
       Serial.print(WiFi.localIP());
-      Serial.print(" RSSI: ");
+      Serial.print(", RSSI: ");
       Serial.println(WiFi.RSSI());
     }
     else
@@ -386,3 +403,4 @@ void inLoop()
     setup_stage = SETUP_DONE;
   }
 }
+#endif
