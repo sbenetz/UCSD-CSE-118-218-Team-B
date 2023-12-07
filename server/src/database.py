@@ -95,7 +95,7 @@ class Database:
   
   def get_plants(self, userId) -> (List[Plant], str):
     """Return a list of all the plants for the given user.
-    Returns: (list_of_plants, None) on success, (None, errorMessage) on failure"""
+    Returns: (list_of_plants, None) on success, ([], errorMessage) on failure"""
 
     # Verify userId exists
     if not self.__exists(USERS.TABLE_NAME, USERS.USER_ID, userId):
@@ -121,12 +121,12 @@ class Database:
   
   def get_plant_sensor_data_logs(self, plantId) -> (List[SensorDataLog], str):
     """Return a list of the sensor data longs for the plant (deviceId = plantId)
-    Returns: (list_of_sensor_data_logs, None) on success, (None, errorMessage) on failure"""
+    Returns: (list_of_sensor_data_logs, None) on success, ([], errorMessage) on failure"""
     deviceId = plantId
 
     # Verify deviceId exists
     if not self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, deviceId):
-      return (None, "deviceId does not exist in devices table")
+      return ([], "deviceId does not exist in devices table")
     
     # Get device's sensor data logs
     result = self.__get_sensor_data_logs(deviceId)
@@ -152,7 +152,7 @@ class Database:
 
     # Verify deviceId exists
     if not self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, deviceId):
-      return (None, "deviceId does not exist in devices table")
+      return ([], "deviceId does not exist in devices table")
     
     # Get device's sensor data logs
     result = self.__get_water_history(deviceId)
