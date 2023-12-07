@@ -393,7 +393,7 @@ void inLoop()
     }
     connStatusChanged = false;
   }
-  if (setup_stage == REGISTERING_DEVICE && hasDeviceProps && isConnected)
+  if (deviceID.isEmpty() && hasDeviceProps && isConnected)
   {
     deviceID = postNewDevice(userID, plantName, plantType, plantSize);
     Serial.println("Device ID set: " + deviceID);
