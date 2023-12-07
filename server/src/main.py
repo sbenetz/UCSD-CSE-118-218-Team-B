@@ -72,5 +72,6 @@ async def device_water_confirm(data: DeviceCredentials) -> str:
 # Remove device from devices & all of it's logs
 @app.post("/device/reset")
 async def device_reset(data: DeviceCredentials) -> str:
+  print(f"/device/reset: {data.deviceId}")
   database.device_reset(data)
   return "ok"

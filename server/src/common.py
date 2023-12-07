@@ -25,6 +25,7 @@ class DeviceCheckIn(BaseModel):
   deviceId: str
   soilMoisture: int
   sunlight: int
+  battery: int
 
 class DeviceCredentials(BaseModel):
   deviceId: str
@@ -48,6 +49,7 @@ class SensorDataLog(BaseModel):
   timestamp: str
   soilMoisture: int
   sunlight: int
+  deviceBattery: int
 
 class PlantInfoReturn(BaseModel):
   sensorDataLogs: List[SensorDataLog]

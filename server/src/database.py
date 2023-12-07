@@ -33,6 +33,7 @@ class LOGS:
   TIMESTAMP = 'timestamp'
   SOIL_MOISTURE = 'soilMoisture'
   SUNLIGHT = 'sunlight'
+  DEVICE_BATTERY = 'deviceBattery'
 
 class WATER_LOGS:
   TABLE_NAME = 'waterLogs'
@@ -138,7 +139,8 @@ class Database:
       sensorLog = SensorDataLog(
         timestamp=row[LOGS.TIMESTAMP], 
         soilMoisture=row[LOGS.SOIL_MOISTURE], 
-        sunlight=row[LOGS.SUNLIGHT]
+        sunlight=row[LOGS.SUNLIGHT],
+        deviceBattery=row[LOGS.DEVICE_BATTERY]
       )
       sensor_logs.append(sensorLog)
       row = result.fetchone()
@@ -192,7 +194,7 @@ class Database:
       return
     
     # Add entry to deviceLogs table
-    self.__insert_device_logs(data.deviceId, data.soilMoisture, data.sunlight)
+    self.__insert_device_logs(data.deviceId, data.soilMoisture, data.sunlight, data.battery)
     return
   
   def device_water_confirm(self, data: DeviceCredentials) -> None:
@@ -258,10 +260,10 @@ class Database:
     self.cursor.execute(f"INSERT INTO {DEVICES.TABLE_NAME} VALUES (?, ?, ?, ?, ?)", params)
     self.connection.commit()
 
-  def __insert_device_logs(self, deviceId, soilMoisture, sunlight):
+  def __insert_device_logs(self, deviceId, soilMoisture, sunlight, deviceBattery):
     """insert new row into deviceLogs table"""
-    params = (deviceId, soilMoisture, sunlight)
-    self.cursor.execute(f"INSERT INTO {LOGS.TABLE_NAME} ({LOGS.DEVICE_ID}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT}) VALUES (?, ?, ?)", params)
+    params = (deviceId, soilMoisture, sunlight, deviceBattery)
+    self.cursor.execute(f"INSERT INTO {LOGS.TABLE_NAME} ({LOGS.DEVICE_ID}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT}, {LOGS.DEVICE_BATTERY}) VALUES (?, ?, ?, ?)", params)
     self.connection.commit()
 
   def __insert_water_logs(self, deviceId):
@@ -279,7 +281,7 @@ class Database:
   def __get_sensor_data_logs(self, deviceId):
     """returns the sensor data logs for a device"""
     params = (deviceId,)
-    result = self.cursor.execute(f"SELECT {LOGS.TIMESTAMP}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT} FROM {LOGS.TABLE_NAME} WHERE {LOGS.DEVICE_ID} = ?", params)
+    result = self.cursor.execute(f"SELECT {LOGS.TIMESTAMP}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT}, {LOGS.DEVICE_BATTERY} FROM {LOGS.TABLE_NAME} WHERE {LOGS.DEVICE_ID} = ?", params)
     return result 
   
   def __get_water_history(self, deviceId):

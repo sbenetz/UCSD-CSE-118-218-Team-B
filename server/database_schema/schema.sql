@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS deviceLogs (
   deviceId TEXT,
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   soilMoisture INTEGER,
-  sunlight INTEGER
+  sunlight INTEGER,
+  deviceBattery INTEGER
 );
 CREATE TABLE IF NOT EXISTS waterLogs (
   logId INTEGER PRIMARY KEY AUTOINCREMENT,
