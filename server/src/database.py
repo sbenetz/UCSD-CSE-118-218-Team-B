@@ -206,6 +206,17 @@ class Database:
     # Add entry to waterLogs table
     self.__insert_water_logs(data.deviceId)
     return
+  
+  def device_reset(self, data: DeviceCredentials) -> None:
+    """Remove device from devices & all of it's logs"""
+
+    self.__remove_from_db(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, data.deviceId)
+    self.__remove_from_db(LOGS.TABLE_NAME, LOGS.DEVICE_ID, data.deviceId)
+    self.__remove_from_db(WATER_LOGS.TABLE_NAME, WATER_LOGS.DEVICE_ID, data.deviceId)
+
+
+
+
     
 
 
@@ -276,6 +287,14 @@ class Database:
     params = (deviceId,)
     result = self.cursor.execute(f"SELECT {WATER_LOGS.TIMESTAMP} FROM {WATER_LOGS.TABLE_NAME} WHERE {WATER_LOGS.DEVICE_ID} = ?", params)
     return result 
+  
+  def __remove_from_db(self, tableName, column, value):
+    """remove all items from tableName where column=value"""
+
+    params = (value,)
+    self.cursor.execute(f"DELETE FROM {tableName} WHERE {column} = ?", params)
+    self.connection.commit()
+    return
 
  # -- Other Helper Methods
 def generate_id(length):

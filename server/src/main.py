@@ -68,3 +68,9 @@ async def device_checkin(data: DeviceCheckIn) -> int:
 async def device_water_confirm(data: DeviceCredentials) -> str:
   database.device_water_confirm(data)
   return "ok"
+
+# Remove device from devices & all of it's logs
+@app.post("/device/reset")
+async def device_reset(data: DeviceCredentials) -> str:
+  database.device_reset(data)
+  return "ok"
