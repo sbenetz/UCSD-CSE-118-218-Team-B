@@ -1,7 +1,5 @@
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
-#include "Certificate.h"
 
 #define SERVER_URL "http://fit-glowworm-promptly.ngrok-free.app/"
 
@@ -38,6 +36,26 @@ String postNewDevice(String user_id, String plant_name, uint16_t plant_type_id, 
         Serial.println("Cannot setup device");
         return "";
     }
+}
+/**
+ * @brief Remove the current device id from the database
+ *
+ * @param device_id
+ */
+void postReset(String device_id)
+{
+    HTTPClient http;
+    WiFiClient client;
+    if (!http.begin(client, SERVER_URL + String("device/reset")))
+    {
+        Serial.println("Can't reach server");
+        return;
+    }
+    http.addHeader("Content-Type", "application/json");
+    int httpResponseCode = http.POST(device_id);
+    String payload = http.getString();
+    Serial.printf("New Device HTTP Response: [%d] %s %s\n", httpResponseCode, HTTPClient::errorToString(httpResponseCode).c_str(), payload.c_str());
+    http.end(); // Free resources
 }
 
 /**

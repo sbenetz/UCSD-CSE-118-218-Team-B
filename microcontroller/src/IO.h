@@ -3,12 +3,14 @@
 #include <BH1750.h>
 #include <limits>
 
-#define WATER_PUMP_VCC 14
-#define WATER_PUMP_GND 12
+#define WATER_PUMP_GND 14
 #define WATER_PUMP_SIG 27
 #define SOIL_SENSOR_VCC 25
 #define SOIL_SENSOR_GND 26
 #define SOIL_SENSOR_SIG 33
+
+int SLEEP_FOR = 60;
+unsigned long long uS_TO_S_FACTOR = 1000000; // Conversion microsecs to secs
 
 /// Controller for the built in LED for Lolin D32 board
 class OnboardLED
@@ -55,6 +57,8 @@ public:
     }
 };
 
+OnboardLED builtinLED;
+
 class Waterer
 {
 public:
@@ -62,13 +66,13 @@ public:
     uint32_t period_;
     long next_check_;
     int goal_moisture_;
+    uint16_t attempts_;
+    uint16_t max_attempts_;
     void begin()
     {
         pinMode(WATER_PUMP_GND, OUTPUT);
-        pinMode(WATER_PUMP_VCC, OUTPUT);
         pinMode(WATER_PUMP_SIG, OUTPUT);
         digitalWrite(WATER_PUMP_GND, LOW);
-        digitalWrite(WATER_PUMP_VCC, LOW);
         digitalWrite(WATER_PUMP_SIG, LOW);
     }
     /**
@@ -78,14 +82,12 @@ public:
      */
     void waterPumpOn(uint time_ms)
     {
-        // digitalWrite(WATER_PUMP_VCC, HIGH);
         digitalWrite(WATER_PUMP_SIG, HIGH);
         delay(time_ms);
-        // digitalWrite(WATER_PUMP_VCC, LOW);
         digitalWrite(WATER_PUMP_SIG, LOW);
     }
 
-    void water(int current_moisture)
+    void handleWatering(int current_moisture)
     {
         if (on_)
         {
@@ -94,20 +96,38 @@ public:
             {
                 if (current_moisture < goal_moisture_)
                 {
-                    // waterPumpOn(1000);
+                    // 3s max
+                    uint time = 300 * (goal_moisture_ - current_moisture);
+                    Serial.printf("Soil Moisture(%): %d < Watering Goal(%): %d\n", current_moisture, waterer.goal_moisture_);
+                    Serial.printf("Watering for %d ms\n", time);
+                    builtinLED.setBlinkOnboardLED(3);
+                    waterPumpOn(time);
+                    if (++attempts_ >= max_attempts_)
+                    {
+                        stopWatering();
+                    }
+                }
+                else
+                {
+                    waterer.stopWatering();
+                    Serial.printf("No watering necessary at this time. Sleeping for %d seconds\n", SLEEP_FOR);
+                    esp_sleep_enable_timer_wakeup(SLEEP_FOR * uS_TO_S_FACTOR);
+                    Serial.flush();
+                    esp_deep_sleep_start();
                 }
                 next_check_ = now + period_;
-                return;
-            }
+            };
         }
     }
 
-    void startWatering(int goal_moisture, uint32_t period = 20000 /*ms*/)
+    void startWatering(int goal_moisture, uint32_t period = 20000 /*ms*/, uint16_t max_attempts = 10)
     {
-        on_ = goal_moisture > 0;
+        attempts_ = 0;
+        on_ = true;
         goal_moisture_ = goal_moisture;
-        next_check_ = millis() + period;
+        next_check_ = millis();
         period_ = period;
+        max_attempts_ = max_attempts;
     }
     void stopWatering()
     {
@@ -115,9 +135,8 @@ public:
         on_ = false;
     }
 };
-BH1750 lightMeter;
-OnboardLED builtinLED;
 Waterer waterer;
+BH1750 lightMeter;
 
 /**
  * @brief Read the soil moisture

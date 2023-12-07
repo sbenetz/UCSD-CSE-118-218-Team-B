@@ -7,7 +7,7 @@
 #include <BLEDevice.h>
 #include <BLEAdvertising.h>
 
-#include "Credentials.h"
+#include "HttpComms.h"
 
 #define BLUETOOTH_NAME "Plant Waterer"
 #define SERVICE_UUID "ab1fb9be-ce51-4b92-b0ec-f4ad17cafdda"
@@ -88,7 +88,11 @@ String scan_wifi_networks()
 void wipeDevice()
 {
   // erase all data
-  Serial.println("Received erase command");
+  Serial.println("Wiping device info.");
+  if (!deviceID.isEmpty() && isConnected)
+  {
+    postReset(deviceID);
+  }
 
   preferences.begin(STORAGE_NAME, false);
   preferences.clear();
@@ -185,11 +189,14 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
       }
       else if (data.containsKey("erase"))
       {
+        Serial.println("Received erase command");
         wipeDevice();
+        WiFi.disconnect();
+        esp_restart();
       }
       else if (data.containsKey("reset"))
       {
-        WiFi.disconnect();
+        Serial.println("Received reset command");
         esp_restart();
       }
       else
@@ -280,8 +287,7 @@ void init_wifi()
       Serial.print(".");
       if (millis() - start_wifi_millis > wifi_timeout)
       {
-        Serial.println();
-        Serial.println("Attempt timed out");
+        Serial.println("\nAttempt timed out");
         WiFi.disconnect(true, true);
         return;
       }
@@ -331,25 +337,21 @@ void beginRFServices()
   {
     wipeDevice();
   }
-  preferences.begin(STORAGE_NAME, false);
-  // preferences.putString("pref_ssid", WIFI_SSID); // temp fix for no bluetooth
-  // preferences.putString("pref_pass", WIFI_PASS); // temp fix for no bluetooth
-  deviceID = preferences.getString("device_id");
+  else
+  {
+    preferences.begin(STORAGE_NAME, false);
+    deviceID = preferences.getString("device_id");
+    preferences.end();
+  }
   init_wifi();
-  // temp fix for no bluetooth
-  // if (deviceID.isEmpty() && isConnected)
-  // {
-  //   deviceID = postNewDevice(userID, plantName, 1, 1);
-  //   Serial.println("Device ID set: " + deviceID);
-  //   preferences.putString("device_id", deviceID);
-  // }
-  // else
   if (!deviceID.isEmpty() && isConnected)
   {
     setup_stage = SETUP_DONE;
   }
-  preferences.end();
-  initBLE();
+  else // only need bluetooth if we need to setup device again
+  {
+    initBLE();
+  }
 }
 
 void inLoop()
