@@ -19,6 +19,7 @@ async def root() -> str:
 # -- PHONE <-> SERVER --
 @app.post("/user/new-account")
 async def new_account(data: Credentials) -> UserId:
+  print(f"--\nNew Account: ({data})")
   (userId, errorMessage) = database.create_account(data)
   return {
     "userId": userId,
@@ -27,6 +28,7 @@ async def new_account(data: Credentials) -> UserId:
   
 @app.post("/user/login")
 async def user_login(data: Credentials) -> UserId:
+  print(f"--\nUser Login: ({data})")
   (userId, errorMessage) = database.login(data)
   return {
     "userId": userId,
@@ -35,6 +37,7 @@ async def user_login(data: Credentials) -> UserId:
 
 @app.get("/user/{userId}/plants")
 async def user_get_plants(userId) -> PlantsReturn:
+  print(f"--\nGet User's Plants")
   (plants, errorMessage) = database.get_plants(userId)
   return {
     "plants": plants,
@@ -43,6 +46,7 @@ async def user_get_plants(userId) -> PlantsReturn:
 
 @app.get("/plants/{plantId}")
 async def get_plant(plantId) -> PlantInfoReturn:
+  print(f"--\nGet Plant Info")
   (sensorDataLogs, errorMessage) = database.get_plant_sensor_data_logs(plantId)
   (waterHistory, errorMessage) = database.get_plant_water_history(plantId)
   plantInfo = PlantInfoReturn(sensorDataLogs=sensorDataLogs, waterHistory=waterHistory, errorMessage=errorMessage)
@@ -52,6 +56,7 @@ async def get_plant(plantId) -> PlantInfoReturn:
 # -- DEVICE <-> SERVER --
 @app.post("/device/initialization")
 async def device_initialization(data: DeviceInit) -> str:
+  print(f"--\nDevice Initialization: ({data})")
   deviceId = database.device_init(data)
   if deviceId is None:
     return ""
@@ -60,6 +65,7 @@ async def device_initialization(data: DeviceInit) -> str:
   
 @app.post("/device/check-in")
 async def device_checkin(data: DeviceCheckIn) -> int:
+  print(f"--\nDevice Check-in: ({data})")
   database.device_check_in(data)
   # TODO: implement logic for if to water or not
   return -1
@@ -72,6 +78,6 @@ async def device_water_confirm(data: DeviceCredentials) -> str:
 # Remove device from devices & all of it's logs
 @app.post("/device/reset")
 async def device_reset(data: DeviceCredentials) -> str:
-  print(f"/device/reset: {data.deviceId}")
+  print(f"--\nDevice Reset - deviceId: {data.deviceId}")
   database.device_reset(data)
   return "ok"
