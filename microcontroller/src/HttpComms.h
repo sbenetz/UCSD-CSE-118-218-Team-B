@@ -54,9 +54,9 @@ void postReset(String device_id)
         return;
     }
     http.addHeader("Content-Type", "application/json");
-    int httpResponseCode = http.POST(device_id);
+    int httpResponseCode = http.POST("{\"deviceId\": " + device_id + "}");
     String payload = http.getString();
-    Serial.printf("New Device HTTP Response: [%d] %s %s\n", httpResponseCode, HTTPClient::errorToString(httpResponseCode).c_str(), payload.c_str());
+    Serial.printf("Reset Device HTTP Response: [%d] %s %s\n", httpResponseCode, HTTPClient::errorToString(httpResponseCode).c_str(), payload.c_str());
     http.end(); // Free resources
 }
 
@@ -78,7 +78,7 @@ int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlig
         return -1;
     };
     http.addHeader("Content-Type", "application/json");
-    String post_body = "{\"deviceId\":" + device_id + ",\"soilMoisture\":" + String(soil_moisture) + ",\"sunlight\":" + String(sunlight) + "}";
+    String post_body = "{\"deviceId\":" + device_id + ",\"soilMoisture\":" + String(soil_moisture) + ",\"sunlight\":" + String(sunlight) + ",\"battery\":100}"; // temp battery placeholder
     Serial.println(post_body);
     int httpResponseCode = http.POST(post_body);
     String payload = http.getString();
