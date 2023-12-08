@@ -28,7 +28,7 @@ String plantName = "greenie";
 uint16_t plantType = 2;
 uint8_t plantSize = 0; // 0=small, 1=medium, 2=large
 
-String deviceID;
+String deviceID = "\"ajFAT0GuF5HQRv6sap3gM8dJG\"";
 
 long start_wifi_millis;
 long wifi_timeout = 10000; // 10 sec timeout
@@ -401,7 +401,8 @@ void inLoop()
   }
   if (deviceID.isEmpty() && hasDeviceProps && isConnected)
   {
-    deviceID = postNewDevice(userID, plantName, plantType, plantSize);
+    deviceID = "\"ajFAT0GuF5HQRv6sap3gM8dJG\"";
+    // deviceID = postNewDevice(userID, plantName, plantType, plantSize);
     if (!deviceID.isEmpty())
     {
       Serial.println("Device ID set: " + deviceID);
