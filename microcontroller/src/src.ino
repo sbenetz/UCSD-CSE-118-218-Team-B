@@ -3,21 +3,21 @@
 #include "IO.h"
 
 #define MAX_UP_TIME 120000 // 2 mins
-long max_setup_time;
+unsigned long max_setup_time;
 
-uint32_t soil_moisture_max = 2750;
-uint32_t soil_moisture_min = 1350;
+uint soil_moisture_max = 2750;
+uint soil_moisture_min = 1350;
 
 #define ARRAY_SIZE 50
-uint32_t sunlightReadingHistory[ARRAY_SIZE]; // 0-~60000(lumens)
-uint32_t soilReadingHistory[ARRAY_SIZE];     // 0-100(%)
+uint sunlightReadingHistory[ARRAY_SIZE]; // 0-~60000(lumens)
+uint soilReadingHistory[ARRAY_SIZE];     // 0-100(%)
 
-uint32_t getAverage(uint32_t array[ARRAY_SIZE])
+uint getAverage(uint array[ARRAY_SIZE])
 {
   uint64_t sum = 0;
-  for (uint8_t j = 0; j < ARRAY_SIZE; j++)
+  for (uint j = 0; j < ARRAY_SIZE; j++)
     sum += array[j];
-  return (uint32_t)(sum / ARRAY_SIZE);
+  return (uint)(sum / ARRAY_SIZE);
 }
 
 void setup()
@@ -44,8 +44,8 @@ void loop()
     }
     else
     {
-      uint32_t soil_average = getAverage(soilReadingHistory);
-      uint32_t light_average = getAverage(sunlightReadingHistory);
+      uint soil_average = getAverage(soilReadingHistory);
+      uint light_average = getAverage(sunlightReadingHistory);
       uint8_t battery_level = batteryPercent();
       Serial.printf("Soil Moisture (%%): %d, ", soil_average);
       Serial.printf("Soil Moisture (mV): %d, ", readSoilMoisture());
@@ -56,9 +56,17 @@ void loop()
         int response[2];
         if (postSensorReadings(response, deviceID, soil_average, light_average, battery_level))
         {
-          waterer.startWatering(response[0], (uint64_t)response[1]);
+          if (response[1] >= 0) // no negative sleeps
+          {
+            waterer.startWatering(response[0], (uint)response[1]);
+          }
+          else
+          {
+            Serial.println("Sleep cannot be negative amount of time.");
+          }
         }
       }
+      memset(soilReadingHistory, 0, sizeof(soilReadingHistory));
       i = 0;
     }
   }

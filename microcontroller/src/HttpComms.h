@@ -68,7 +68,7 @@ void postReset(String device_id)
  * @param sunlight integer sunlight level to report
  * @return integer watering level for plant
  */
-bool postSensorReadings(int *outputs, String device_id, uint32_t soil_moisture, uint32_t sunlight, uint8_t battery_level)
+bool postSensorReadings(int *outputs, String device_id, uint soil_moisture, uint sunlight, uint8_t battery_level)
 {
     HTTPClient http;
     WiFiClient client;
@@ -101,8 +101,6 @@ bool postSensorReadings(int *outputs, String device_id, uint32_t soil_moisture, 
     }
     else
     {
-        outputs[0] = -1;
-        outputs[1] = 0;
         return false;
     }
 }

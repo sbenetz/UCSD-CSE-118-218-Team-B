@@ -28,7 +28,7 @@ String plantName = "greenie";
 uint16_t plantType = 2;
 uint8_t plantSize = 0; // 0=small, 1=medium, 2=large
 
-String deviceID = "\"ajFAT0GuF5HQRv6sap3gM8dJG\"";
+String deviceID;
 
 long start_wifi_millis;
 long wifi_timeout = 10000; // 10 sec timeout
@@ -36,7 +36,7 @@ long wifi_timeout = 10000; // 10 sec timeout
 bool hasCredentials = false;       // If stored WiFi credentials are available
 volatile bool isConnected = false; // WiFi connection status
 bool connStatusChanged = false;    // Wifi connection change status
-bool hasDeviceProps = false;       // Received info about this device over bluetooth
+bool hasDeviceProps = true;        // Received info about this device over bluetooth
 
 /** Bluetooth pointers */
 BLECharacteristic *pCharacteristicWiFi; // Characteristic for digital output
@@ -110,14 +110,14 @@ void wipeDevice()
   preferences.end();
   connStatusChanged = true;
   hasCredentials = false;
-  hasDeviceProps = false;
+  // hasDeviceProps = false;
   setup_stage = NONE;
 
   memset(ssids_array, '\0', sizeof(ssids_array));
-  userID = "";
-  plantName = "";
-  plantType = 0;
-  plantSize = 0; // 0=small, 1=medium, 2=large
+  // userID = "";
+  // plantName = "";
+  // plantType = 0;
+  // plantSize = 0; // 0=small, 1=medium, 2=large
 
   deviceID = "";
   client_wifi_password = "";
@@ -187,10 +187,10 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
       }
       else if (setup_stage == WIFI_CONNECTED && data.containsKey("user_id") && data.containsKey("plant_name") && data.containsKey("plant_type") && data.containsKey("plant_size"))
       {
-        userID = data["user_id"].as<String>();
-        plantName = data["plant_name"].as<String>();
-        plantSize = data["plant_size"].as<uint16_t>();
-        plantType = data["plant_type"].as<uint8_t>();
+        // userID = data["user_id"].as<String>();
+        // plantName = data["plant_name"].as<String>();
+        // plantSize = data["plant_size"].as<uint16_t>();
+        // plantType = data["plant_type"].as<uint8_t>();
         hasDeviceProps = true;
         setState(REGISTERING_DEVICE);
       }
