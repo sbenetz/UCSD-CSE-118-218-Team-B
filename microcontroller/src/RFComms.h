@@ -23,10 +23,10 @@ Preferences preferences;
 String client_wifi_ssid;
 String client_wifi_password;
 
-String userID = "OaVlxIFhjBzfm2hARNZwOugQm";
+String userID = "lMl4u54jZ5pjHlJhZBACJqr5j"; // yuancheng
 String plantName = "greenie";
-uint16_t plantType = 1;
-uint8_t plantSize = 1; // 0=small, 1=medium, 2=large
+uint16_t plantType = 2;
+uint8_t plantSize = 0; // 0=small, 1=medium, 2=large
 
 String deviceID;
 
@@ -99,10 +99,10 @@ void wipeDevice()
 {
   // erase all data
   Serial.println("Wiping device info.");
-  if (!deviceID.isEmpty() && isConnected)
-  {
-    postReset(deviceID);
-  }
+  // if (!deviceID.isEmpty() && isConnected)
+  // {
+  //   postReset(deviceID);
+  // }
   WiFi.disconnect(false, true);
   setup_stage = NONE;
   preferences.begin(STORAGE_NAME, false);

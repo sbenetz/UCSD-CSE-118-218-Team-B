@@ -53,7 +53,11 @@ void loop()
       Serial.printf("Battery level (%%): %d\n", battery_level);
       if (!waterer.wateringOn()) // only request new watering level if we don't have one
       {
-        waterer.startWatering(postSensorReadings(deviceID, soil_average, light_average, battery_level));
+        int response[2];
+        if (postSensorReadings(response, deviceID, soil_average, light_average, battery_level))
+        {
+          waterer.startWatering(response[0], (uint64_t)response[1]);
+        }
       }
       i = 0;
     }

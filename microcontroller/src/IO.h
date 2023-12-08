@@ -15,7 +15,6 @@
 #define MIN_BATTERY 3100 // mV
 #define MAX_BATTERY 4200 // mV
 
-int SLEEP_FOR = 60;
 unsigned long long uS_TO_S_FACTOR = 1000000; // Conversion microsecs to secs
 
 uint8_t batteryPercent()
@@ -79,6 +78,7 @@ public:
     int goal_moisture_;
     uint16_t attempts_;
     uint16_t max_attempts_;
+    uint64_t sleep_time_;
     void begin()
     {
         pinMode(WATER_PUMP_GND, OUTPUT);
@@ -125,18 +125,25 @@ public:
                 else
                 {
                     stopWatering();
-                    Serial.printf("No watering necessary at this time. Sleeping for %d seconds\n", SLEEP_FOR);
-                    esp_sleep_enable_timer_wakeup(SLEEP_FOR * uS_TO_S_FACTOR);
-                    Serial.flush();
-                    esp_deep_sleep_start();
+
+                    Serial.println("No watering necessary at this time.");
+                    if (sleep_time_ > 0)
+                    {
+                        Serial.printf("Sleeping for %d seconds\n", sleep_time_);
+                        esp_sleep_enable_timer_wakeup(sleep_time_ * uS_TO_S_FACTOR);
+                        Serial.flush();
+                        esp_deep_sleep_start();
+                    }
                 }
                 next_check_ = now + period_;
             };
         }
     }
 
-    void startWatering(int goal_moisture, uint32_t period = 20000 /*ms*/, uint16_t max_attempts = 10)
+    void startWatering(int goal_moisture, uint64_t sleep_time, uint32_t period = 20000 /*ms*/, uint16_t max_attempts = 10)
     {
+        Serial.printf("Watering until %d %%. Sleeping for %d seconds after.", goal_moisture, sleep_time);
+        sleep_time_ = sleep_time;
         attempts_ = 0;
         on_ = true;
         goal_moisture_ = goal_moisture;

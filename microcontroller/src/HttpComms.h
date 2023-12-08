@@ -68,7 +68,7 @@ void postReset(String device_id)
  * @param sunlight integer sunlight level to report
  * @return integer watering level for plant
  */
-int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlight, uint8_t battery_level)
+bool postSensorReadings(int *outputs, String device_id, uint32_t soil_moisture, uint32_t sunlight, uint8_t battery_level)
 {
     HTTPClient http;
     WiFiClient client;
@@ -82,11 +82,28 @@ int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlig
     Serial.println(post_body);
     int httpResponseCode = http.POST(post_body);
     String payload = http.getString();
+    StaticJsonDocument<200> jsonBuffer;
+    auto error = deserializeJson(jsonBuffer, payload.c_str());
+    if (error)
+    {
+        Serial.print("deserializeJson() failed with code ");
+        Serial.println(error.c_str());
+        return false;
+    }
+    JsonObject data = jsonBuffer.as<JsonObject>();
     Serial.printf("Post Sensors HTTP Response: [%d] %s %s\n", httpResponseCode, HTTPClient::errorToString(httpResponseCode).c_str(), payload.c_str());
     http.end(); // Free resources
-    if (payload.length() > 0 && httpResponseCode == 200)
-        return payload.toInt();
+    if (data.containsKey("goalMoisture") && data.containsKey("sleepTime") && httpResponseCode == 200)
+    {
+        outputs[0] = data["goalMoisture"].as<int>();
+        outputs[1] = data["sleepTime"].as<int>();
+        return true;
+    }
     else
-        return -1;
+    {
+        outputs[0] = -1;
+        outputs[1] = 0;
+        return false;
+    }
 }
 #endif
