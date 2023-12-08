@@ -96,7 +96,8 @@ void wipeDevice()
   {
     postReset(deviceID);
   }
-
+  WiFi.disconnect(false, true);
+  setup_stage = NONE;
   preferences.begin(STORAGE_NAME, false);
   preferences.clear();
   preferences.end();
@@ -345,21 +346,18 @@ void initBLE()
 void beginRFServices()
 {
   Serial.println("Booting Communications...");
-  if (esp_reset_reason() == ESP_RST_POWERON)
+  preferences.begin(STORAGE_NAME, false);
+  if (preferences.isKey("device_id"))
   {
-    Serial.println("Reset button pressed");
+    deviceID = preferences.getString("device_id");
+  }
+  preferences.end();
+  init_wifi();
+  if (esp_reset_reason() == ESP_RST_POWERON) // we want wifi connection to before wiping
+  {
+    Serial.println("Reset button pressed.");
     wipeDevice();
   }
-  else
-  {
-    preferences.begin(STORAGE_NAME, false);
-    if (preferences.isKey("device_id"))
-    {
-      deviceID = preferences.getString("device_id");
-    }
-    preferences.end();
-  }
-  init_wifi();
   if (!deviceID.isEmpty() && isConnected)
   {
     setup_stage = SETUP_DONE;
