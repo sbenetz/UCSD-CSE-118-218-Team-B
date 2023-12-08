@@ -42,6 +42,15 @@ class WATER_LOGS:
   DEVICE_ID = 'deviceId'
   TIMESTAMP = 'timestamp'
 
+class PLANT_TYPES:
+  TABLE_NAME = 'plantTypes'
+  # column names 
+  TYPE_ID = 'typeId'
+  SIZE = 'size'
+  TYPE_NAME = 'typeName'
+  SOIL_MOIST_THRESH = 'soilMoistThresh'
+  SOIL_MOIST_GOAL = 'soilMoistGoal'
+
 
 class Database:
   # -- Public Methods --
@@ -197,6 +206,23 @@ class Database:
     self.__insert_device_logs(data.deviceId, data.soilMoisture, data.sunlight, data.battery)
     return
   
+  def water_logic(self, data: DeviceCheckIn) -> int:
+    """Return the soil moisture level to water to if watering is requested,
+     -1 if watering is not requested"""
+    # Get soil moisture threshold
+    plantType = self.__get_col_from_db(DEVICES.TABLE_NAME, DEVICES.PLANT_TYPE, DEVICES.DEVICE_ID, data.deviceId)
+    plantSize = self.__get_col_from_db(DEVICES.TABLE_NAME, DEVICES.PLANT_SIZE, DEVICES.DEVICE_ID, data.deviceId)
+    print(f"plantType: {plantType}, plantSize: {plantSize}", end="")
+    soilMoistThresh = self.__get_col_from_db_2(PLANT_TYPES.TABLE_NAME, PLANT_TYPES.SOIL_MOIST_THRESH, PLANT_TYPES.TYPE_ID, plantType, PLANT_TYPES.SIZE, plantSize)
+    soilMoistGoal = self.__get_col_from_db_2(PLANT_TYPES.TABLE_NAME, PLANT_TYPES.SOIL_MOIST_GOAL, PLANT_TYPES.TYPE_ID, plantType, PLANT_TYPES.SIZE, plantSize)
+    print(f"soilMoistThresh: {soilMoistThresh}, soilMoistGoal: {soilMoistGoal}")
+    if(data.soilMoisture < soilMoistThresh):
+      self.device_water_confirm(data)
+      return soilMoistGoal
+    else:
+      return -1
+
+
   def device_water_confirm(self, data: DeviceCredentials) -> None:
     """Log timestamp to waterLogs for the given device"""
     
@@ -215,8 +241,6 @@ class Database:
     self.__remove_from_db(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, data.deviceId)
     self.__remove_from_db(LOGS.TABLE_NAME, LOGS.DEVICE_ID, data.deviceId)
     self.__remove_from_db(WATER_LOGS.TABLE_NAME, WATER_LOGS.DEVICE_ID, data.deviceId)
-
-
 
 
     
@@ -292,11 +316,22 @@ class Database:
   
   def __remove_from_db(self, tableName, column, value):
     """remove all items from tableName where column=value"""
-
     params = (value,)
     self.cursor.execute(f"DELETE FROM {tableName} WHERE {column} = ?", params)
     self.connection.commit()
     return
+  
+  def __get_col_from_db(self, tableName, getCol, whereCol, value):
+    """get the getCol from tableName where whereCol=value. Return a value."""
+    params = (value,)
+    result = self.cursor.execute(f"SELECT {getCol} FROM {tableName} WHERE {whereCol} = ?", params)
+    return result.fetchone()[getCol]
+    
+  def __get_col_from_db_2(self, tableName, getCol, whereCol1, value1, whereCol2, value2):
+    """get the getCol from tableName where whereCol1=value1 AND whereCol2=value2. Return a value"""
+    params = (value1, value2)
+    result = self.cursor.execute(f"SELECT {getCol} FROM {tableName} WHERE {whereCol1} = ? AND {whereCol2} = ?", params)
+    return result.fetchone()[getCol]
 
  # -- Other Helper Methods
 def generate_id(length):

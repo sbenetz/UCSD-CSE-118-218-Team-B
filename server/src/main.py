@@ -64,11 +64,12 @@ async def device_initialization(data: DeviceInit) -> str:
     return deviceId
   
 @app.post("/device/check-in")
-async def device_checkin(data: DeviceCheckIn) -> int:
+async def device_checkin(data: DeviceCheckIn) -> DeviceCheckInReturn:
   print(f"--\nDevice Check-in: ({data})")
   database.device_check_in(data)
-  # TODO: implement logic for if to water or not
-  return -1
+  goalMoisture = database.water_logic(data) # Logic for if to water or not
+  print(f"Return: (goalMoisture: {goalMoisture}, sleepTime: {DEVICE_SLEEP_TIME_S})")
+  return DeviceCheckInReturn(goalMoisture=goalMoisture, sleepTime=DEVICE_SLEEP_TIME_S)
 
 @app.post("/device/water-confirmation")
 async def device_water_confirm(data: DeviceCredentials) -> str:

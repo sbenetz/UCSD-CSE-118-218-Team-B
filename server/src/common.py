@@ -7,7 +7,9 @@ DB_DIRECTORY = 'database'
 DB_FILE_NAME = 'database.db'
 PATH_TO_DB = f"../{DB_DIRECTORY}/{DB_FILE_NAME}"
 
-
+# Device Control
+#DEVICE_SLEEP_TIME_S = 1800 # 30 min
+DEVICE_SLEEP_TIME_S = 15 # 15 seconds
 
 
 # - POST Request Bodies -
@@ -55,3 +57,7 @@ class PlantInfoReturn(BaseModel):
   sensorDataLogs: List[SensorDataLog]
   waterHistory: List[str]
   errorMessage: str | None = None
+
+class DeviceCheckInReturn(BaseModel):
+  goalMoisture: int
+  sleepTime: int
