@@ -11,8 +11,17 @@
 #define SOIL_SENSOR_GND 26
 #define SOIL_SENSOR_SIG 33
 
+#define BATTERY_PIN 35
+#define MIN_BATTERY 3100 // mV
+#define MAX_BATTERY 4200 // mV
+
 int SLEEP_FOR = 60;
 unsigned long long uS_TO_S_FACTOR = 1000000; // Conversion microsecs to secs
+
+uint8_t batteryPercent()
+{
+    return (uint8_t)100 - (uint8_t)(((double)(MAX_BATTERY - analogReadMilliVolts(BATTERY_PIN))) / (double)(MAX_BATTERY - MIN_BATTERY) * 100.0);
+}
 
 /// Controller for the built in LED for Lolin D32 board
 class OnboardLED

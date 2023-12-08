@@ -2,6 +2,9 @@
 #include "RFComms.h"
 #include "IO.h"
 
+#define MAX_UP_TIME 120000 // 2 mins
+long max_setup_time;
+
 uint32_t soil_moisture_max = 2750;
 uint32_t soil_moisture_min = 1350;
 
@@ -20,6 +23,7 @@ uint32_t getAverage(uint32_t array[ARRAY_SIZE])
 void setup()
 {
   Serial.begin(115200);
+  max_setup_time = millis() + MAX_UP_TIME;
   IOBegin();
   builtinLED.setBlinkOnboardLED(2, 200);
   beginRFServices();
@@ -42,14 +46,25 @@ void loop()
     {
       uint32_t soil_average = getAverage(soilReadingHistory);
       uint32_t light_average = getAverage(sunlightReadingHistory);
-      Serial.printf("Soil_Moisture (%%): %d, ", soil_average);
+      uint8_t battery_level = batteryPercent();
+      Serial.printf("Soil Moisture (%%): %d, ", soil_average);
       Serial.printf("Soil Moisture (mV): %d, ", readSoilMoisture());
-      Serial.printf("Light Level (lx): %d \n", light_average);
+      Serial.printf("Light Level (lx): %d, ", light_average);
+      Serial.printf("Battery level (%%): %d\n", battery_level);
       if (!waterer.wateringOn()) // only request new watering level if we don't have one
       {
-        waterer.startWatering(postSensorReadings(deviceID, soil_average, light_average));
+        waterer.startWatering(postSensorReadings(deviceID, soil_average, light_average, battery_level));
       }
       i = 0;
+    }
+  }
+  else if (setup_stage != SETUP_DONE)
+  {
+    if (millis() > max_setup_time)
+    {
+      Serial.println("Turning off to save power. Press reset to try setup again");
+      Serial.flush();
+      esp_deep_sleep_start();
     }
   }
   builtinLED.doBlink(); // run blinks if setup

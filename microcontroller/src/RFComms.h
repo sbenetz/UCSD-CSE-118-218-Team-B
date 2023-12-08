@@ -57,6 +57,13 @@ enum setup_stages
 };
 enum setup_stages setup_stage = NONE;
 
+void setState(setup_stages state)
+{
+  if (setup_stage != SETUP_DONE)
+  {
+    setup_stage = state;
+  }
+}
 String scan_wifi_networks()
 {
   Serial.println("Start scanning for networks");
@@ -104,6 +111,7 @@ void wipeDevice()
   connStatusChanged = true;
   hasCredentials = false;
   hasDeviceProps = false;
+  setup_stage = NONE;
 
   memset(ssids_array, '\0', sizeof(ssids_array));
   userID = "";
@@ -184,11 +192,11 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
         plantSize = data["plant_size"].as<uint16_t>();
         plantType = data["plant_type"].as<uint8_t>();
         hasDeviceProps = true;
-        setup_stage = REGISTERING_DEVICE;
+        setState(REGISTERING_DEVICE);
       }
       else if (data.containsKey("search_wifi"))
       {
-        setup_stage = SCANNING;
+        setState(SCANNING);
         Serial.println("Starting WiFi Scan...");
       }
       else if (data.containsKey("erase"))
@@ -299,12 +307,12 @@ void init_wifi()
       {
         Serial.println("\nAttempt timed out");
         WiFi.disconnect(true, true);
-        setup_stage = WIFI_FAILED;
+        setState(WIFI_FAILED);
         return;
       }
     }
     Serial.println("\nConnected to " + pref_ssid);
-    setup_stage = WIFI_CONNECTED;
+    setState(WIFI_CONNECTED);
     builtinLED.setBlinkOnboardLED(5, 200);
   }
   else
@@ -360,7 +368,7 @@ void beginRFServices()
   }
   if (!deviceID.isEmpty() && isConnected)
   {
-    setup_stage = SETUP_DONE;
+    setState(SETUP_DONE);
   }
   else // only need bluetooth if we need to setup device again
   {
@@ -394,11 +402,14 @@ void inLoop()
   if (deviceID.isEmpty() && hasDeviceProps && isConnected)
   {
     deviceID = postNewDevice(userID, plantName, plantType, plantSize);
-    Serial.println("Device ID set: " + deviceID);
-    preferences.begin(STORAGE_NAME, false);
-    preferences.putString("device_id", deviceID);
-    preferences.end();
-    setup_stage = SETUP_DONE;
+    if (!deviceID.isEmpty())
+    {
+      Serial.println("Device ID set: " + deviceID);
+      preferences.begin(STORAGE_NAME, false);
+      preferences.putString("device_id", deviceID);
+      preferences.end();
+      setState(SETUP_DONE);
+    }
   }
 }
 #endif

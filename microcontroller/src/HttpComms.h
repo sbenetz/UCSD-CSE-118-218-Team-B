@@ -68,7 +68,7 @@ void postReset(String device_id)
  * @param sunlight integer sunlight level to report
  * @return integer watering level for plant
  */
-int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlight)
+int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlight, uint8_t battery_level)
 {
     HTTPClient http;
     WiFiClient client;
@@ -78,7 +78,7 @@ int postSensorReadings(String device_id, uint32_t soil_moisture, uint32_t sunlig
         return -1;
     };
     http.addHeader("Content-Type", "application/json");
-    String post_body = "{\"deviceId\":" + device_id + ",\"soilMoisture\":" + String(soil_moisture) + ",\"sunlight\":" + String(sunlight) + ",\"battery\":100}"; // temp battery placeholder
+    String post_body = "{\"deviceId\":" + device_id + ",\"soilMoisture\":" + String(soil_moisture) + ",\"sunlight\":" + String(sunlight) + ",\"battery\":" + String(battery_level) + "}";
     Serial.println(post_body);
     int httpResponseCode = http.POST(post_body);
     String payload = http.getString();
