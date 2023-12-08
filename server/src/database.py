@@ -209,6 +209,7 @@ class Database:
   def water_logic(self, data: DeviceCheckIn) -> int:
     """Return the soil moisture level to water to if watering is requested,
      -1 if watering is not requested"""
+
     # Get soil moisture threshold
     plantType = self.__get_col_from_db(DEVICES.TABLE_NAME, DEVICES.PLANT_TYPE, DEVICES.DEVICE_ID, data.deviceId)
     plantSize = self.__get_col_from_db(DEVICES.TABLE_NAME, DEVICES.PLANT_SIZE, DEVICES.DEVICE_ID, data.deviceId)
@@ -216,6 +217,14 @@ class Database:
     soilMoistThresh = self.__get_col_from_db_2(PLANT_TYPES.TABLE_NAME, PLANT_TYPES.SOIL_MOIST_THRESH, PLANT_TYPES.TYPE_ID, plantType, PLANT_TYPES.SIZE, plantSize)
     soilMoistGoal = self.__get_col_from_db_2(PLANT_TYPES.TABLE_NAME, PLANT_TYPES.SOIL_MOIST_GOAL, PLANT_TYPES.TYPE_ID, plantType, PLANT_TYPES.SIZE, plantSize)
     print(f"soilMoistThresh: {soilMoistThresh}, soilMoistGoal: {soilMoistGoal}")
+
+    # Do force water if applicable
+    if(data.deviceId in forceWaterList):
+      forceWaterList.remove(data.deviceId)
+      print(f"force water on {data.deviceId}. resultingList: {forceWaterList}")
+      self.device_water_confirm(data)
+      return soilMoistGoal
+
     if(data.soilMoisture < soilMoistThresh):
       self.device_water_confirm(data)
       return soilMoistGoal

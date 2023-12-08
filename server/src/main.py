@@ -76,8 +76,15 @@ async def device_water_confirm(data: DeviceCredentials) -> str:
   database.device_water_confirm(data)
   return "ok"
 
-# Remove device from devices & all of it's logs
-@app.post("/device/reset")
+
+# -- CONTROL COMMANDS --
+@app.post("/device/force-water") # will tell device to water next time it checks in
+async def device_force_water(data: DeviceCredentials) -> str:
+  print(f"--\nDevice Force Water - deviceId: {data.deviceId}")
+  forceWaterList.append(data.deviceId)
+  return "ok"
+
+@app.post("/device/reset") # Remove device from devices & all of it's logs
 async def device_reset(data: DeviceCredentials) -> str:
   print(f"--\nDevice Reset - deviceId: {data.deviceId}")
   database.device_reset(data)
