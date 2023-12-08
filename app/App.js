@@ -10,7 +10,9 @@ import { Card } from 'react-native-paper';
 import Home from './components/Home';
 import addPlant from './components/addPlant';
 import PlantProfile from './components/PlantProfile';
-import SelectBluetooth from './components/connectBluetooth';
+import EnterWifi from './components/setupDeviceWifi';
+import DeviceProps from './components/setupDeviceProfile';
+
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -20,7 +22,8 @@ export default function App() {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="AddPlant" component={addPlant} />
         <Stack.Screen name="PlantProfile" component={PlantProfile} />
-        <Stack.Screen name="connectBluetooth" component={SelectBluetooth} />
+        <Stack.Screen name="Connect Device to Wifi" component={EnterWifi} />
+        <Stack.Screen name="Set Device Properties" component={DeviceProps} />
       </Stack.Navigator>
     </NavigationContainer>
   );

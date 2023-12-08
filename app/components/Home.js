@@ -78,7 +78,7 @@ const Home = () => {
           style={styles.fab}
           small
           icon="plus"
-          onPress={() => navigation.navigate('connectBluetooth')}
+          onPress={() => navigation.navigate('Connect Device to Wifi')}
         />
 
       </ImageBackground>

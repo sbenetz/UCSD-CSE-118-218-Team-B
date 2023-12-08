@@ -4,10 +4,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const ImagePickerPlaceholder = ( { onImagePicked } ) => {
+const ImagePickerPlaceholder = ({ onImagePicked }) => {
     const [imageUrl, setImageUrl] = useState(require('../assets/image_placeholder.jpg'));
 
-    
+
     const pickImmage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -17,7 +17,7 @@ const ImagePickerPlaceholder = ( { onImagePicked } ) => {
         });
 
         if (!result.canceled) {
-            setImageUrl({uri: result.uri});
+            setImageUrl({ uri: result.uri });
             if (onImagePicked) {
                 onImagePicked(result.uri);
             }
@@ -42,12 +42,12 @@ const ImagePickerPlaceholder = ( { onImagePicked } ) => {
             />
             <Image source={imageUrl} style={styles.image} />
 
-            
+
         </View>
     );
 }
 
-const DatePickerPlaceholder = ( {onDatePicked} ) => {
+const DatePickerPlaceholder = ({ onDatePicked }) => {
     const [date, setDate] = useState(new Date());
 
 
@@ -59,7 +59,7 @@ const DatePickerPlaceholder = ( {onDatePicked} ) => {
         }
     };
 
-  
+
     return (
         <View>
             <DateTimePicker
@@ -76,11 +76,11 @@ const DatePickerPlaceholder = ( {onDatePicked} ) => {
 
 const DismissKeyboard = ({ children }) => (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      {children}
+        {children}
     </TouchableWithoutFeedback>
-  );
+);
 
-const AddPlant = ( { navigation } ) => {
+const AddPlant = ({ navigation }) => {
     const [plantName, setPlantName] = useState('');
     const [plantDate, setPlantDate] = useState('');
     const [plantType, setPlantType] = useState('');
@@ -95,74 +95,74 @@ const AddPlant = ( { navigation } ) => {
         console.log('Plant saved!');
     };
 
-    return(
+    return (
 
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : "height"}
             style={styles.container}>
 
             <ScrollView>
 
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        
-                <View style={styles.inner}>
-                    <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} />
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.header}>Name </Text>
+                    <View style={styles.inner}>
+                        <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} />
+
+                        <View style={styles.inputRow}>
+                            <Text style={styles.header}>Name </Text>
                             <TextInput
                                 style={styles.input}
                                 value={plantName}
                                 onChangeText={setPlantName}
                                 placeholder="Enter Plant Name"
                             />
-                    </View>
-                        
-                
-
-                <View style={styles.inputRow}>
-                        <Text style={styles.header}>Date </Text>
-                        <DatePickerPlaceholder onDatePicked={(date) => setPlantDate(date)} />
-                    </View>
-
-                    <View style={styles.row}>
-                        <Text style={styles.header}>Plant Type</Text>
-                        <View style={styles.pickerContainer}>
-                            <Picker
-                                selectedValue={plantType}
-                                onValueChange={(itemValue, itemIndex) => setPlantType(itemValue)}
-                                style={styles.picker}
-                            >
-                                <Picker.Item label="Select Type" value="" />
-                                <Picker.Item label="Succulents" value="succulents" />
-                                <Picker.Item label="Flowering Plant" value="flowering_plant" />
-                                <Picker.Item label="Foliage Plant" value="foliage_plant" />
-                                <Picker.Item label="Herb" value="herb" />
-                                <Picker.Item label="Fern" value="fern" />
-                                <Picker.Item label="Air Plant" value="air_plant" />
-                                <Picker.Item label="Cacti" value="cacti" />
-                                <Picker.Item label="Palm" value="palm" />
-                                <Picker.Item label="Bonsai Tree" value="bonsai_tree" />
-                                <Picker.Item label="Vine and Climber" value="vine_and_climber" />
-                            </Picker>
                         </View>
-                    </View>
 
 
-                    <Text style={styles.header}>Additional Information</Text>
-                    <TextInput
-                        style={styles.additionalInfo}
-                        value={additionalInfo}
-                        onChangeText={setAdditionalInfo}
-                        placeholder="Enter Additional Info"
-                        multiline={true}
-                        numberOfLines={4}
-                        scrollEnabled={true}
-                    />
 
-                    <Text style={styles.header}>Plant Watering System</Text>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.header}>Date </Text>
+                            <DatePickerPlaceholder onDatePicked={(date) => setPlantDate(date)} />
+                        </View>
+
+                        <View style={styles.row}>
+                            <Text style={styles.header}>Plant Type</Text>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={plantType}
+                                    onValueChange={(itemValue, itemIndex) => setPlantType(itemValue)}
+                                    style={styles.picker}
+                                >
+                                    <Picker.Item label="Select Type" value="" />
+                                    <Picker.Item label="Succulents" value="succulents" />
+                                    <Picker.Item label="Flowering Plant" value="flowering_plant" />
+                                    <Picker.Item label="Foliage Plant" value="foliage_plant" />
+                                    <Picker.Item label="Herb" value="herb" />
+                                    <Picker.Item label="Fern" value="fern" />
+                                    <Picker.Item label="Air Plant" value="air_plant" />
+                                    <Picker.Item label="Cacti" value="cacti" />
+                                    <Picker.Item label="Palm" value="palm" />
+                                    <Picker.Item label="Bonsai Tree" value="bonsai_tree" />
+                                    <Picker.Item label="Vine and Climber" value="vine_and_climber" />
+                                </Picker>
+                            </View>
+                        </View>
+
+
+                        <Text style={styles.header}>Additional Information</Text>
+                        <TextInput
+                            style={styles.additionalInfo}
+                            value={additionalInfo}
+                            onChangeText={setAdditionalInfo}
+                            placeholder="Enter Additional Info"
+                            multiline={true}
+                            numberOfLines={4}
+                            scrollEnabled={true}
+                        />
+
+                        <Text style={styles.header}>Plant Watering System</Text>
                         <View style={styles.wateringSystem}>
-                           <View style={styles.row}>
+                            <View style={styles.row}>
                                 <Text style={styles.label}>Watering Mode</Text>
                                 <Switch
                                     onValueChange={(value) => setWateringMode(value)}
@@ -173,18 +173,26 @@ const AddPlant = ( { navigation } ) => {
                             <View style={styles.row}>
                                 <Text style={styles.label}>Watering Frequency</Text>
                             </View>
-                     
+
                             <View style={styles.row}>
                                 <Text style={styles.label}>Watering Amount</Text>
                             </View>
                         </View>
 
-                    <TouchableOpacity style={styles.saveButton} onPress={savePlant}>
-                        <Text style={styles.saveButtonText}>SAVE</Text>
-                    </TouchableOpacity>
-                </View>
-                
-            </TouchableWithoutFeedback>
+                        <TouchableOpacity style={styles.saveButton} onPress={() => {
+                            savePlant();
+                            navigation.navigate("Set Device Properties", {
+                                user_id: "yuancheng",
+                                plant_type: plantType,
+                                plant_size: 0,
+                                plant_name: plantName,
+                            })
+                        }}>
+                            <Text style={styles.saveButtonText}>SAVE</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                </TouchableWithoutFeedback>
             </ScrollView>
         </KeyboardAvoidingView>
     )
@@ -225,7 +233,7 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: 'bold',
         textAlign: 'center',
-        
+
     },
 
     header: {
@@ -281,7 +289,7 @@ const styles = StyleSheet.create({
         borderRadius: 3,
         padding: 5,
         marginBottom: 10,
-      },
+    },
 
     saveButton: {
         backgroundColor: '#4EBAF7',
@@ -292,7 +300,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignSelf: 'center',
         marginTop: 20,
-      },
+    },
 
     saveButtonText: {
         color: '#fff',
