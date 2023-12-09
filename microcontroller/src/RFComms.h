@@ -95,14 +95,15 @@ String scan_wifi_networks()
   return output;
 }
 
-void wipeDevice()
+void wipeDevice(bool remove_from_database = false)
 {
   // erase all data
   Serial.println("Wiping device info.");
-  // if (!deviceID.isEmpty() && isConnected)
-  // {
-  //   postReset(deviceID);
-  // }
+  // if we want the device removed from the database
+  if (remove_from_database && !deviceID.isEmpty() && isConnected)
+  {
+    postReset(deviceID);
+  }
   WiFi.disconnect(false, true);
   setup_stage = NONE;
   preferences.begin(STORAGE_NAME, false);
@@ -130,7 +131,6 @@ void wipeDevice()
  */
 class MyServerCallbacks : public BLEServerCallbacks
 {
-  // TODO this doesn't take into account several clients being connected
   void onConnect(BLEServer *pServer)
   {
     builtinLED.setBlinkOnboardLED(6, 200);
@@ -163,8 +163,7 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
     auto error = deserializeJson(jsonBuffer, (char *)&value[0]);
     if (error)
     {
-      Serial.print("deserializeJson() failed with code ");
-      Serial.println(error.c_str());
+      Serial.printf("Bluetooth deserializeJson() failed with code: %d\n", error.c_str());
       return;
     }
     else

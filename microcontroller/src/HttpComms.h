@@ -82,22 +82,26 @@ bool postSensorReadings(int *outputs, String device_id, uint soil_moisture, uint
     Serial.println(post_body);
     int httpResponseCode = http.POST(post_body);
     String payload = http.getString();
-    StaticJsonDocument<200> jsonBuffer;
-    auto error = deserializeJson(jsonBuffer, payload.c_str());
-    if (error)
-    {
-        Serial.print("deserializeJson() failed with code ");
-        Serial.println(error.c_str());
-        return false;
-    }
-    JsonObject data = jsonBuffer.as<JsonObject>();
     Serial.printf("Post Sensors HTTP Response: [%d] %s %s\n", httpResponseCode, HTTPClient::errorToString(httpResponseCode).c_str(), payload.c_str());
     http.end(); // Free resources
-    if (data.containsKey("goalMoisture") && data.containsKey("sleepTime") && httpResponseCode == 200)
+    if (httpResponseCode == 200)
     {
-        outputs[0] = data["goalMoisture"].as<int>();
-        outputs[1] = data["sleepTime"].as<int>();
-        return true;
+        StaticJsonDocument<200> jsonBuffer;
+        auto error = deserializeJson(jsonBuffer, payload.c_str());
+        if (error)
+        {
+            Serial.print("deserializeJson() failed with code ");
+            Serial.println(error.c_str());
+            return false;
+        }
+        JsonObject data = jsonBuffer.as<JsonObject>();
+        if (data.containsKey("goalMoisture") && data.containsKey("sleepTime"))
+        {
+            outputs[0] = data["goalMoisture"].as<int>();
+            outputs[1] = data["sleepTime"].as<int>();
+            return true;
+        }
+        return false;
     }
     else
     {

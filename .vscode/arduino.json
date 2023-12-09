@@ -3,5 +3,6 @@
     "board": "esp32:esp32:d32",
     "programmer": "esptool",
     "output": "microcontroller/build",
-    "sketch": "microcontroller/src/src.ino"
+    "sketch": "microcontroller/src/src.ino",
+    "port": "COM5"
 }

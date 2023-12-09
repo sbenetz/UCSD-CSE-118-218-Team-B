@@ -13,8 +13,8 @@
 #define SOIL_SENSOR_SIG 33
 
 #define BATTERY_PIN 35
-#define MIN_BATTERY 3100 // mV
-#define MAX_BATTERY 4200 // mV
+#define MIN_BATTERY 3100 // min mV for Lolin D32 to operate
+#define MAX_BATTERY 4200 // max mV from datasheet
 
 OnboardLED builtinLED;
 Waterer waterer;
@@ -24,10 +24,12 @@ BH1750 lightMeter;
  * @brief Get the battery percentage
  *
  * @return (0-100)%
+ *
+ * @note The battery mV at pin 35 is halved so you have to multiply by 2
  */
 uint8_t batteryPercent()
 {
-    return (uint8_t)100 - (uint8_t)(((double)(MAX_BATTERY - analogReadMilliVolts(BATTERY_PIN))) / (double)(MAX_BATTERY - MIN_BATTERY) * 100.0);
+    return (uint8_t)100 - (uint8_t)(((double)(MAX_BATTERY - analogReadMilliVolts(BATTERY_PIN) * 2.0)) / (double)(MAX_BATTERY - MIN_BATTERY) * 100.0);
 }
 
 /**

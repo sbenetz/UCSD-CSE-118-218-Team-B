@@ -5,8 +5,9 @@
 #define MAX_UP_TIME 120000 // 2 mins
 unsigned long max_setup_time;
 
-uint soil_moisture_max = 2750;
-uint soil_moisture_min = 1350;
+uint soil_moisture_max = 2675; // pretty consistent (around same as air)
+uint soil_moisture_min = 1775; // want this to be adjustable since it varies a lot
+bool self_calibrate = true;
 
 #define ARRAY_SIZE 50
 uint sunlightReadingHistory[ARRAY_SIZE]; // 0-~60000(lumens)
@@ -38,7 +39,19 @@ void loop()
 
     if (i < ARRAY_SIZE)
     {
-      soilReadingHistory[i] = (uint8_t)((double)(soil_moisture_max - readSoilMoisture()) / (double)(soil_moisture_max - soil_moisture_min) * 100.0);
+      uint soil_mV = readSoilMoisture();
+      if (self_calibrate)
+      {
+        if (soil_moisture_min > soil_mV)
+        {
+          soil_moisture_min = soil_mV;
+        }
+        if (soil_moisture_max < soil_mV)
+        {
+          soil_moisture_max = soil_mV;
+        }
+      }
+      soilReadingHistory[i] = (uint8_t)((double)(soil_moisture_max - soil_mV) / (double)(soil_moisture_max - soil_moisture_min) * 100.0);
       sunlightReadingHistory[i] = readLightLevel();
       i++;
     }

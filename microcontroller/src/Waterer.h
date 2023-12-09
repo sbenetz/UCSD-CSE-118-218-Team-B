@@ -48,8 +48,8 @@ public:
             {
                 if ((int)current_moisture < goal_moisture_)
                 {
-                    // 3s max, .75s min (still need to tune)
-                    uint time = max(30 * ((uint)goal_moisture_ - current_moisture), (uint)750);
+                    // 2s max, .5s min (still need to tune)
+                    uint time = max(20 * ((uint)goal_moisture_ - current_moisture), (uint)500);
                     Serial.printf("Soil Moisture(%): %d < Watering Goal(%): %d\n", current_moisture, goal_moisture_);
                     Serial.printf("Watering for %d ms\n", time);
                     waterPumpOn(time);
@@ -77,13 +77,13 @@ public:
         }
     }
 
-    void startWatering(int goal_moisture, uint sleep_time, uint period = 20000 /*ms*/, uint16_t max_attempts = 10)
+    void startWatering(int goal_moisture, uint sleep_time, uint period = 60000 /*ms*/, uint16_t max_attempts = 10)
     {
         Serial.printf("Watering until %d %%. Sleeping for %d seconds after.\n", goal_moisture, sleep_time);
         sleep_time_ = sleep_time;
         attempts_ = 0;
         on_ = true;
-        goal_moisture_ = goal_moisture;
+        goal_moisture_ = min(goal_moisture, 100);
         next_check_ = millis();
         period_ = period;
         max_attempts_ = max_attempts;
