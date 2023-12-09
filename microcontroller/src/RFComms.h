@@ -72,6 +72,13 @@ String scan_wifi_networks()
   WiFi.mode(WIFI_STA);
 
   String output;
+  // /** Json object for outgoing data */
+  // JsonObject& jsonOut = jsonBuffer.createObject();
+  // jsonOut["ssid"] = ssidPrim;
+  // jsonOut["passwrod"] = pwPrim;
+  // Convert JSON object into a string
+  // jsonOut.printTo(output);
+  // jsonBuffer.clear();
   // Scan for networks
   int16_t apNum = WiFi.scanNetworks(false, false, false, 1000);
   if (apNum == 0)
@@ -99,10 +106,13 @@ void wipeDevice(bool remove_from_database = false)
 {
   // erase all data
   Serial.println("Wiping device info.");
-  // if we want the device removed from the database
-  if (remove_from_database && !deviceID.isEmpty() && isConnected)
+
+  if (remove_from_database && !deviceID.isEmpty())
   {
-    postReset(deviceID);
+    if (!isConnected && init_wifi())
+    {
+      postReset(deviceID);
+    };
   }
   WiFi.disconnect(false, true);
   setup_stage = NONE;
@@ -111,14 +121,14 @@ void wipeDevice(bool remove_from_database = false)
   preferences.end();
   connStatusChanged = true;
   hasCredentials = false;
-  // hasDeviceProps = false;
+  hasDeviceProps = false;
   setup_stage = NONE;
 
   memset(ssids_array, '\0', sizeof(ssids_array));
-  // userID = "";
-  // plantName = "";
-  // plantType = 0;
-  // plantSize = 0; // 0=small, 1=medium, 2=large
+  userID = "";
+  plantName = "";
+  plantType = 0;
+  plantSize = 0;
 
   deviceID = "";
   client_wifi_password = "";
@@ -186,10 +196,10 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
       }
       else if (setup_stage == WIFI_CONNECTED && data.containsKey("user_id") && data.containsKey("plant_name") && data.containsKey("plant_type") && data.containsKey("plant_size"))
       {
-        // userID = data["user_id"].as<String>();
-        // plantName = data["plant_name"].as<String>();
-        // plantSize = data["plant_size"].as<uint16_t>();
-        // plantType = data["plant_type"].as<uint8_t>();
+        userID = data["user_id"].as<String>();
+        plantName = data["plant_name"].as<String>();
+        plantSize = data["plant_size"].as<uint16_t>();
+        plantType = data["plant_type"].as<uint8_t>();
         hasDeviceProps = true;
         setState(REGISTERING_DEVICE);
       }
@@ -243,14 +253,7 @@ class MyCallbackHandler : public BLECharacteristicCallbacks
       message = "Device has been setup!";
       break;
     }
-    // /** Json object for outgoing data */
-    // JsonObject& jsonOut = jsonBuffer.createObject();
-    // jsonOut["ssid"] = ssidPrim;
-    // jsonOut["passwrod"] = pwPrim;
-    // Convert JSON object into a string
-    // jsonOut.printTo(message);
     pCharacteristicWiFi->setValue(std::string(message.c_str()));
-    // jsonBuffer.clear();
   }
 };
 
@@ -268,8 +271,14 @@ void lostCon(WiFiEvent_t event)
   connStatusChanged = true;
 }
 
-void init_wifi()
+bool init_wifi()
 {
+  if (isConnected)
+  {
+    Serial.println("WiFi already connected. If you'd like to set up a new AP, call WiFi.disconnect() first.");
+    return true;
+  }
+
   // Setup callback function for successful connection
   WiFi.onEvent(gotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
   // Setup callback function for lost connection
@@ -307,16 +316,18 @@ void init_wifi()
         Serial.println("\nAttempt timed out");
         WiFi.disconnect(true, true);
         setState(WIFI_FAILED);
-        return;
+        return false;
       }
     }
     Serial.println("\nConnected to " + pref_ssid);
     setState(WIFI_CONNECTED);
     builtinLED.setBlinkOnboardLED(5, 200);
+    return true;
   }
   else
   {
     Serial.println("No credentials stored.");
+    return false;
   }
 }
 
@@ -360,11 +371,6 @@ void beginRFServices()
   }
   preferences.end();
   init_wifi();
-  if (esp_reset_reason() == ESP_RST_POWERON) // we want wifi connection to before wiping
-  {
-    Serial.println("Reset button pressed.");
-    wipeDevice();
-  }
   if (!deviceID.isEmpty() && isConnected)
   {
     setState(SETUP_DONE);
@@ -400,6 +406,7 @@ void inLoop()
   }
   if (deviceID.isEmpty() && hasDeviceProps && isConnected)
   {
+    // currently in use for our data collection. change to post for real device
     deviceID = "\"ajFAT0GuF5HQRv6sap3gM8dJG\"";
     // deviceID = postNewDevice(userID, plantName, plantType, plantSize);
     if (!deviceID.isEmpty())

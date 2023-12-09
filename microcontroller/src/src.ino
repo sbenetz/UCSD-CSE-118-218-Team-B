@@ -2,12 +2,10 @@
 #include "RFComms.h"
 #include "IO.h"
 
-#define MAX_UP_TIME 120000 // 2 mins
+#define MAX_UP_TIME 180000 // 3 mins
 unsigned long max_setup_time;
-
-uint soil_moisture_max = 2675; // pretty consistent (around same as air)
-uint soil_moisture_min = 1775; // want this to be adjustable since it varies a lot
-bool self_calibrate = true;
+bool wipe_on_reset = true;
+bool remove_device_on_reset = false;
 
 #define ARRAY_SIZE 50
 uint sunlightReadingHistory[ARRAY_SIZE]; // 0-~60000(lumens)
@@ -26,7 +24,12 @@ void setup()
   Serial.begin(115200);
   max_setup_time = millis() + MAX_UP_TIME;
   IOBegin();
-  builtinLED.setBlinkOnboardLED(2, 200);
+  builtinLED.setBlinkOnboardLED(3, 200);
+  if (wipe_on_reset && esp_reset_reason() == ESP_RST_POWERON) // we want wifi connection to before wiping
+  {
+    Serial.println("Reset button pressed.");
+    wipeDevice(remove_device_on_reset);
+  }
   beginRFServices();
 }
 
@@ -39,19 +42,7 @@ void loop()
 
     if (i < ARRAY_SIZE)
     {
-      uint soil_mV = readSoilMoisture();
-      if (self_calibrate)
-      {
-        if (soil_moisture_min > soil_mV)
-        {
-          soil_moisture_min = soil_mV;
-        }
-        if (soil_moisture_max < soil_mV)
-        {
-          soil_moisture_max = soil_mV;
-        }
-      }
-      soilReadingHistory[i] = (uint8_t)((double)(soil_moisture_max - soil_mV) / (double)(soil_moisture_max - soil_moisture_min) * 100.0);
+      soilReadingHistory[i] = readSoilMoisturePercent();
       sunlightReadingHistory[i] = readLightLevel();
       i++;
     }
@@ -61,7 +52,7 @@ void loop()
       uint light_average = getAverage(sunlightReadingHistory);
       uint8_t battery_level = batteryPercent();
       Serial.printf("Soil Moisture (%%): %d, ", soil_average);
-      Serial.printf("Soil Moisture (mV): %d, ", readSoilMoisture());
+      Serial.printf("Soil Moisture (mV): %d, ", readSoilMoistureMilliVolts());
       Serial.printf("Light Level (lx): %d, ", light_average);
       Serial.printf("Battery level (%%): %d\n", battery_level);
       if (!waterer.wateringOn()) // only request new watering level if we don't have one

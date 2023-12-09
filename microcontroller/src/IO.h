@@ -12,6 +12,10 @@
 #define SOIL_SENSOR_GND 26
 #define SOIL_SENSOR_SIG 33
 
+uint soil_moisture_max = 2675; // pretty consistent (around same as air)
+uint soil_moisture_min = 1775; // want this to be adjustable since it varies a lot
+bool self_calibrate = true;
+
 #define BATTERY_PIN 35
 #define MIN_BATTERY 3100 // min mV for Lolin D32 to operate
 #define MAX_BATTERY 4200 // max mV from datasheet
@@ -33,11 +37,32 @@ uint8_t batteryPercent()
 }
 
 /**
+ * @brief Get the current percentage soil moisture
+ *
+ * @return (0-100)%
+ */
+uint8_t readSoilMoisturePercent()
+{
+    uint soil_mV = readSoilMoistureMilliVolts();
+    if (self_calibrate)
+    {
+        if (soil_moisture_min > soil_mV)
+        {
+            soil_moisture_min = soil_mV;
+        }
+        if (soil_moisture_max < soil_mV)
+        {
+            soil_moisture_max = soil_mV;
+        }
+    }
+    return (uint8_t)((double)(soil_moisture_max - soil_mV) / (double)(soil_moisture_max - soil_moisture_min) * 100.0);
+}
+/**
  * @brief Read the soil moisture
  *
  * @return mV reading of soil moisture sensor
  */
-uint readSoilMoisture()
+uint readSoilMoistureMilliVolts()
 {
     return analogReadMilliVolts(SOIL_SENSOR_SIG);
 }
