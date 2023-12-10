@@ -1,69 +1,68 @@
+#ifndef IO_H
+#define IO_H
 #include <Arduino.h>
 #include <Wire.h>
 #include <BH1750.h>
 #include <limits>
 
-#define WATER_PUMP_VCC 14
-#define WATER_PUMP_GND 12
-#define WATER_PUMP_SIG 27
+#include "Waterer.h"
+#include "OnboardLED.h"
+
 #define SOIL_SENSOR_VCC 25
 #define SOIL_SENSOR_GND 26
 #define SOIL_SENSOR_SIG 33
 
-/// Controller for the built in LED for Lolin D32 board
-class OnboardLED
+uint soil_moisture_max = 2675; // pretty consistent (around same as air)
+uint soil_moisture_min = 1775; // want this to be adjustable since it varies a lot
+bool self_calibrate = true;
+
+#define BATTERY_PIN 35
+#define MIN_BATTERY 3100 // min mV for Lolin D32 to operate
+#define MAX_BATTERY 4200 // max mV from datasheet
+
+OnboardLED builtinLED;
+Waterer waterer;
+BH1750 lightMeter;
+
+/**
+ * @brief Get the battery percentage
+ *
+ * @return (0-100)%
+ *
+ * @note The battery mV at pin 35 is halved so you have to multiply by 2
+ */
+uint8_t batteryPercent()
 {
-public:
-    bool ON;
-    uint8_t count_;
-    uint8_t max_;
-    uint32_t period_;
-    long next_toggle_;
-    void begin()
+    return (uint8_t)100 - (uint8_t)(((double)(MAX_BATTERY - analogReadMilliVolts(BATTERY_PIN) * 2.0)) / (double)(MAX_BATTERY - MIN_BATTERY) * 100.0);
+}
+
+/**
+ * @brief Get the current percentage soil moisture
+ *
+ * @return (0-100)%
+ */
+uint8_t readSoilMoisturePercent()
+{
+    uint soil_mV = readSoilMoistureMilliVolts();
+    if (self_calibrate)
     {
-        ON = false;
-        pinMode(BUILTIN_LED, OUTPUT);
-        digitalWrite(BUILTIN_LED, !ON);
-    }
-    // HIGH = OFF, LOW = ON
-    void toggleLED()
-    {
-        digitalWrite(BUILTIN_LED, !ON); // write inversed state back
-        ON = !ON;
-    }
-    void doBlink()
-    {
-        if (count_ < max_)
+        if (soil_moisture_min > soil_mV)
         {
-            if (millis() > next_toggle_)
-            {
-                toggleLED();
-                next_toggle_ += period_;
-                if (ON && max_ != std::numeric_limits<uint8_t>::max())
-                    count_++;
-                return;
-            }
+            soil_moisture_min = soil_mV;
+        }
+        if (soil_moisture_max < soil_mV)
+        {
+            soil_moisture_max = soil_mV;
         }
     }
-    // default blink once per second infinitely
-    void setBlinkOnboardLED(uint8_t times = std::numeric_limits<uint8_t>::max(), uint32_t period = 500 /*ms*/)
-    {
-        next_toggle_ = millis() + period;
-        period_ = period;
-        max_ = times;
-        count_ = 0;
-    }
-};
-
-BH1750 lightMeter;
-OnboardLED builtinLED;
-
+    return (uint8_t)((double)(soil_moisture_max - soil_mV) / (double)(soil_moisture_max - soil_moisture_min) * 100.0);
+}
 /**
  * @brief Read the soil moisture
  *
  * @return mV reading of soil moisture sensor
  */
-uint32_t readSoilMoisture()
+uint readSoilMoistureMilliVolts()
 {
     return analogReadMilliVolts(SOIL_SENSOR_SIG);
 }
@@ -73,32 +72,16 @@ uint32_t readSoilMoisture()
  * @return Light level in lux (0 ~ 54612)
  * 	   0 : no valid return value
  */
-uint32_t readLightLevel()
+uint readLightLevel()
 {
     float light = lightMeter.readLightLevel();
     if (light > 0)
-        return (uint32_t)light;
+        return (uint)light;
     else
-        return uint32_t(0);
-}
-/**
- * @brief Turn on the water pump
- *
- * @param time_ms how long to run pump for (ms)
- */
-void waterPumpOn(uint time_ms)
-{
-    // digitalWrite(WATER_PUMP_VCC, HIGH);
-    digitalWrite(WATER_PUMP_SIG, HIGH);
-    delay(time_ms);
-    // digitalWrite(WATER_PUMP_VCC, LOW);
-    digitalWrite(WATER_PUMP_SIG, LOW);
+        return uint(0);
 }
 
-/**
- * @brief Declare pins and initialize their values
- *
- */
+/// @brief Declare pins and initialize their values
 void IOBegin()
 {
     // BH1750 light meter
@@ -107,17 +90,14 @@ void IOBegin()
     lightMeter.begin();
     // startup onboard LED code
     builtinLED.begin();
+    // startup the water pump code
+    waterer.begin();
     // setup pins
     pinMode(SOIL_SENSOR_VCC, OUTPUT);
     pinMode(SOIL_SENSOR_GND, OUTPUT);
     pinMode(SOIL_SENSOR_SIG, ANALOG);
-    pinMode(WATER_PUMP_GND, OUTPUT);
-    pinMode(WATER_PUMP_VCC, OUTPUT);
-    pinMode(WATER_PUMP_SIG, OUTPUT);
     // initalize pin values
-    digitalWrite(WATER_PUMP_GND, LOW);
-    digitalWrite(WATER_PUMP_VCC, LOW);
-    digitalWrite(WATER_PUMP_SIG, LOW);
     digitalWrite(SOIL_SENSOR_VCC, HIGH);
     digitalWrite(SOIL_SENSOR_GND, LOW);
 }
+#endif
