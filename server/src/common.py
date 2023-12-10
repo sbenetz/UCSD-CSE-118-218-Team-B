@@ -9,7 +9,8 @@ PATH_TO_DB = f"../{DB_DIRECTORY}/{DB_FILE_NAME}"
 
 # Device Control
 #DEVICE_SLEEP_TIME_S = 1800 # 30 min
-DEVICE_SLEEP_TIME_S = 15 # 15 seconds
+DEVICE_SLEEP_TIME_S = 900 # 15 min
+# DEVICE_SLEEP_TIME_S = 15 # 15 seconds
 
 forceWaterList = [] # if deviceId is in this list, do force water
 

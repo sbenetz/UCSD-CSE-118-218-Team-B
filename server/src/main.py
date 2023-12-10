@@ -55,7 +55,7 @@ async def get_plant(plantId) -> PlantInfoReturn:
   (sensorDataLogs, errorMessage) = database.get_plant_sensor_data_logs(plantId)
   (waterHistory, errorMessage) = database.get_plant_water_history(plantId)
   plantInfo = PlantInfoReturn(sensorDataLogs=sensorDataLogs, waterHistory=waterHistory, errorMessage=errorMessage)
-  print(f"Return: {plantInfo}")
+  print(f"Return info for {plantId}")
   return plantInfo
   
 
