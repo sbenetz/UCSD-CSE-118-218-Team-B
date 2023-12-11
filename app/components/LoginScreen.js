@@ -10,7 +10,7 @@ const LoginScreen = ({ navigation }) => {
         axios.post('https://fit-glowworm-promptly.ngrok-free.app/user/login', { username, password })
             .then(response => {
                 const userId = response.data.userId;
-                navigation.navigate('Home', { userId });
+                navigation.navigate('Home', { user_id: userId });
                 console.log('Login successful', response.data);
             })
             .catch(error => {
@@ -19,48 +19,48 @@ const LoginScreen = ({ navigation }) => {
             });
     };
 
-    
+
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.container}>
-            <TextInput
-                placeholder="Username"
-                value={username}
-                onChangeText={setUsername}
-                style={styles.input}
-            />
+            <View style={styles.container}>
+                <TextInput
+                    placeholder="Username"
+                    value={username}
+                    onChangeText={setUsername}
+                    style={styles.input}
+                />
 
-            <TextInput
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                style={styles.input}
-                secureTextEntry
-            />
+                <TextInput
+                    placeholder="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    style={styles.input}
+                    secureTextEntry
+                />
 
-            <Button title="Login" onPress={handleLogin} />
-            <Text onPress={() => navigation.navigate('Signup')}>Don't have an account? Sign up</Text>
-        </View>
+                <Button title="Login" onPress={handleLogin} />
+                <Text onPress={() => navigation.navigate('Signup')}>Don't have an account? Sign up</Text>
+            </View>
         </TouchableWithoutFeedback>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 20,
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
     },
     input: {
-      width: '100%',
-      marginVertical: 10,
-      padding: 15,
-      borderWidth: 1,
-      borderColor: '#ddd',
-      borderRadius: 5,
+        width: '100%',
+        marginVertical: 10,
+        padding: 15,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 5,
     },
-  });
+});
 
 export default LoginScreen;

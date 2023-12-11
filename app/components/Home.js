@@ -104,9 +104,9 @@ const Home = ({ route }) => {
   }
 
 
-  const renderPlant = ({ item, index }) => {
-    const isEven = index % 2 === 0;
-    const imageStyle = isEven ? styles.leftImage : styles.rightImage;
+  const renderPlant = ({ item }) => {
+    // const isEven = index % 2 === 0;
+    // const imageStyle = isEven ? styles.leftImage : styles.rightImage;
 
     return (
       <View>
@@ -119,6 +119,13 @@ const Home = ({ route }) => {
   return (
 
     <View style={styles.container} >
+
+      <Image
+        source={require('../assets/left_background.png')}
+        style={styles.leftBackground}
+      />
+
+
       <ImageBackground
         source={require('../assets/add_bar_background.jpg')}
         resizeMode="cover"
@@ -129,7 +136,7 @@ const Home = ({ route }) => {
           style={styles.fab}
           small
           icon="plus"
-          onPress={() => navigation.navigate('AddPlant')}
+          onPress={() => navigation.navigate('Connect Device to Wifi', { user_id: userId })}
         />
 
       </ImageBackground>
@@ -139,7 +146,7 @@ const Home = ({ route }) => {
         data={plants}
         renderItem={renderPlant}
         keyExtractor={item => item.id}
-        numColumns={2}
+        numColumns={1}
         contentContainerStyle={styles.list}
       />
     </View>
