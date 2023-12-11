@@ -131,13 +131,13 @@ const AddPlant = ({ route, navigation }) => {
     return (
 
 
-          
+  
         <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : "height"}
             style={styles.container}>
 
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                 <View style={styles.inner}>
                     <View style={styles.inputRow}>
                         <Text style={styles.header}>Name </Text>
                             <TextInput
@@ -168,25 +168,25 @@ const AddPlant = ({ route, navigation }) => {
                     </View>
 
                     <View style={openType ? styles.adjustedRow : null}>
-                        <Text style={styles.header}>Plant Type</Text>
+                        <Text style={styles.header}>Plant Size</Text>
                         <View style={styles.tagContainer}>
                             {renderTags()}
                         </View>
                     </View>
 
-                    <TouchableOpacity 
+                    {/* <TouchableOpacity 
                         style={[styles.saveButton, openSize ? styles.adjustedRow : null]} 
                         onPress={savePlant}
                     >
                         <Text style={styles.saveButtonText}>SAVE</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                         
                 
 
-                        <View style={styles.inner}>
-                            <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} />
+                        {/* <View style={styles.inner}> */}
+                            {/* <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} /> */}
 
-                            <View style={styles.inputRow}>
+                            {/* <View style={styles.inputRow}>
                                 <Text style={styles.header}>Name </Text>
                                 <TextInput
                                     style={styles.input}
@@ -194,14 +194,14 @@ const AddPlant = ({ route, navigation }) => {
                                     onChangeText={setPlantName}
                                     placeholder="Enter Plant Name"
                                 />
-                            </View>
+                            </View> */}
 
 
 
                             {/* <View style={styles.inputRow}>
                         <Text style={styles.header}>Date </Text>
                         <DatePickerPlaceholder onDatePicked={(date) => setPlantDate(date)} /> */}
-                        </View>
+                        {/* </View> */}
 
                         {/* <View style={styles.row}>
                         <Text style={styles.header}>Plant Type</Text>
@@ -261,7 +261,7 @@ const AddPlant = ({ route, navigation }) => {
                     </View>
 
                 </TouchableWithoutFeedback>
-            </ScrollView>
+    
         </KeyboardAvoidingView>
     )
 };
