@@ -23,90 +23,94 @@ const PlantProfile = (route) => {
 
     // const activeColor = rating > 3 ? healthActiveColor : unhealthActiveColor;
     // const inactiveColor = rating > 3 ? healthInactiveColor : unhealthInactiveColor;
-    const plant  = route.route.params;
+    const plant = route.route.params;
 
     const [plantInfo, setPlantInfo] = useState([]);
     const [batteryLevel, setBatteryLevel] = useState(null);
     const [moistureLevel, setMoistureLevel] = useState([]);
     const [sunlightLevel, setSunlightLevel] = useState([]);
     const [waterHistory, setWaterHistory] = useState([]);
-   
+    const [refreshing, setRefreshing] = useState(false);
+    const fetchPlantInfo = async () => {
+        try {
+            const response = await axios.get(`https://fit-glowworm-promptly.ngrok-free.app/plants/${plant.plantId}`);
+            setPlantInfo(response.data);
+        } catch (error) {
+            console.error('Error fetching plant info', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchPlantInfo = async () => {
-            try {
-                const response = await axios.get(`https://fit-glowworm-promptly.ngrok-free.app/plants/${plant.plantId}`);
-                setPlantInfo(response.data);
-              } catch (error) {
-                console.error('Error fetching plant info', error);
-              }
-        };
         fetchPlantInfo();
     }, []);
 
     // Battery Level
     useEffect(() => {
         if (plantInfo.sensorDataLogs && plantInfo.sensorDataLogs.length > 0) {
-          const latestLog = plantInfo.sensorDataLogs[plantInfo.sensorDataLogs.length - 1];
-          const batteryLevel = latestLog.deviceBattery;
-          setBatteryLevel(batteryLevel);
+            const latestLog = plantInfo.sensorDataLogs[plantInfo.sensorDataLogs.length - 1];
+            const batteryLevel = latestLog.deviceBattery;
+            setBatteryLevel(batteryLevel);
         }
-      }, [plantInfo.sensorDataLogs]);
+    }, [plantInfo.sensorDataLogs]);
 
     const getBatteryColor = (level) => {
         if (level < 20) return '#FFA07A';
         if (level < 60) return '#FFFF99';
         return '#90EE90';
-      };
+    };
 
     // Fetch moisture level
     useEffect(() => {
         if (plantInfo.sensorDataLogs && plantInfo.sensorDataLogs.length > 0) {
-          const moistureData = plantInfo.sensorDataLogs.map(log => ({
-            timestamp: log.timestamp,
-            value: log.soilMoisture,
-          }));
-          setMoistureLevel(moistureData);
+            const moistureData = plantInfo.sensorDataLogs.map(log => ({
+                timestamp: log.timestamp,
+                value: log.soilMoisture,
+            }));
+            setMoistureLevel(moistureData);
         }
-      }, [plantInfo.sensorDataLogs]);
+    }, [plantInfo.sensorDataLogs]);
 
     // Fetch sunlight level
     useEffect(() => {
         if (plantInfo.sensorDataLogs && plantInfo.sensorDataLogs.length > 0) {
-          const sunlightData = plantInfo.sensorDataLogs.map(log => ({
-            timestamp: log.timestamp,
-            value: log.sunlight,
-          }));
-          setSunlightLevel(sunlightData);
+            const sunlightData = plantInfo.sensorDataLogs.map(log => ({
+                timestamp: log.timestamp,
+                value: log.sunlight,
+            }));
+            setSunlightLevel(sunlightData);
         }
-      }, [plantInfo.sensorDataLogs]);
+    }, [plantInfo.sensorDataLogs]);
 
     // Fetch water history
-   useEffect(() => {
+    useEffect(() => {
         if (plantInfo.waterHistory && plantInfo.waterHistory.length > 0) {
-          const waterHistory = plantInfo.waterHistory;
-          setWaterHistory(waterHistory);
+            const waterHistory = plantInfo.waterHistory;
+            setWaterHistory(waterHistory);
         }
     }, [plantInfo.waterHistory]);
 
 
 
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : "height"}
             style={styles.container}>
-            <ScrollView>
+            <ScrollView refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={() => {
+                    fetchPlantInfo();
+                    setRefreshing(true);
+                }} />}>
 
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <View style={styles.inner}>
-        
-
-                    <View style={styles.center}>
-                        <Text style={styles.header}>{plant.plantName}</Text>
-                        {/* <Image source={plant.image} style={styles.image}/> */}
 
 
-                        {/* <View>
+                        <View style={styles.center}>
+                            <Text style={styles.header}>{plant.plantName}</Text>
+                            {/* <Image source={plant.image} style={styles.image}/> */}
+
+
+                            {/* <View>
                         <Text style={styles.labelTitle}>Current Battery Level</Text>
                             {batteryLevel !== null ? (
                                 <View style={[styles.battery, { backgroundColor: getBatteryColor(batteryLevel) }]}>
@@ -117,40 +121,40 @@ const PlantProfile = (route) => {
                             )}
 
                         </View> */}
-                         <View style={styles.batteryContainer}>
-                            <Text style={styles.labelTitle}>Current Battery Level</Text>
+                            <View style={styles.batteryContainer}>
+                                <Text style={styles.labelTitle}>Current Battery Level</Text>
 
 
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>  
-                                <View style={styles.batteryHead} />
-                                <View style={styles.batteryBody}>
-                                    <View 
-                                style={[
-                                    styles.batteryLevel, 
-                                    { width: `${batteryLevel}%`, backgroundColor: getBatteryColor(batteryLevel) }
-                                ]} 
-                                />
-                                <Text style={styles.batteryText}>{`${batteryLevel}%`}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={styles.batteryHead} />
+                                    <View style={styles.batteryBody}>
+                                        <View
+                                            style={[
+                                                styles.batteryLevel,
+                                                { width: `${batteryLevel}%`, backgroundColor: getBatteryColor(batteryLevel) }
+                                            ]}
+                                        />
+                                        <Text style={styles.batteryText}>{`${batteryLevel}%`}</Text>
+                                    </View>
                                 </View>
+
                             </View>
-                  
+
+
                         </View>
 
-                
-                    </View>
 
-           
-                    {/* <View>
+                        {/* <View>
                         <Text style={styles.labelTitle}>Date</Text>
                         <Text style={styles.label}>{plant.date}</Text>
                     </View> */}
 
-                    {/* <View>
+                        {/* <View>
                         <Text style={styles.labelTitle}>Additional Information</Text>
                         <Text style={styles.label}>{plant.additionalInfo}</Text>
                     </View> */}
 
-                    {/* <View>
+                        {/* <View>
                         <Text style={styles.labelTitle}>Overall Health Status</Text>
                         <View style={styles.starsBar}>
                             <View style={styles.stars}>
@@ -169,21 +173,21 @@ const PlantProfile = (route) => {
                         </View>
                     </View> */}
 
-            
-                    <View>
-                        <Text style={styles.label}>Soil Moisture Level</Text>
-                        <Graph levelLogs={moistureLevel} />
-                    </View>
-                    
-                    <View>
-                        <Text style={styles.label}>Sunlight Level</Text>
-                        <Graph levelLogs={sunlightLevel} />
-                    </View>
 
-                    <View>
-                        <Text style={styles.label}>Watering History</Text>
-                        <WateringHistory waterHistory={waterHistory} />
-                    </View>
+                        <View>
+                            <Text style={styles.label}>Soil Moisture Level</Text>
+                            <Graph levelLogs={moistureLevel} />
+                        </View>
+
+                        <View>
+                            <Text style={styles.label}>Sunlight Level</Text>
+                            <Graph levelLogs={sunlightLevel} />
+                        </View>
+
+                        <View>
+                            <Text style={styles.label}>Watering History</Text>
+                            <WateringHistory waterHistory={waterHistory} />
+                        </View>
 
 
 
@@ -191,8 +195,8 @@ const PlantProfile = (route) => {
 
                     </View>
                 </TouchableWithoutFeedback>
-        </ScrollView>
-    </KeyboardAvoidingView>
+            </ScrollView>
+        </KeyboardAvoidingView >
     );
 }
 
@@ -253,21 +257,21 @@ const styles = StyleSheet.create({
     //     flexDirection: 'row',
     //     marginBottom: 2,
     //   },
-    
+
     //   star: {
     //     fontSize: 18,
     //     marginRight: 5,
     //   },
 
-batteryContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 20,
-},
+    batteryContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingBottom: 20,
+    },
 
-      batteryBody: {
+    batteryBody: {
         width: 50,
         height: 20,
         marginLeft: 2,
@@ -276,33 +280,33 @@ batteryContainer: {
         borderRadius: 5,
         justifyContent: 'center',
         position: 'relative', // Added to position children absolutely
-      },
+    },
 
-      batteryHead: {
+    batteryHead: {
         width: 3,
         height: 15,
         backgroundColor: 'grey',
         borderRadius: 2,
-      },
+    },
 
-      batteryLevel: {
+    batteryLevel: {
         height: '100%',
         borderRadius: 3,
         position: 'absolute', // Ensure it doesn't affect layout of sibling elements
         left: 0, // Align to the left side of the batteryBody
         top: 0, // Align to the top of the batteryBody
-      },
-      batteryText: {
+    },
+    batteryText: {
         fontSize: 12,
         color: 'black',
         fontWeight: 'bold',
-        position: 'absolute', 
-        alignSelf: 'center', 
-        top: '50%', 
-        transform: [{ translateY: -8 }], 
-      },
+        position: 'absolute',
+        alignSelf: 'center',
+        top: '50%',
+        transform: [{ translateY: -8 }],
+    },
 
-    
+
 });
 
 export default PlantProfile;
