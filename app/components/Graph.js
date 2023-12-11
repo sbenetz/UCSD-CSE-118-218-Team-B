@@ -11,9 +11,9 @@ const processDataForInterval = (dataLogs, startTime) => {
 
   for (let i = 0; i < 4; i++) {
     const endTimme = currentTime.clone().add(30, 'minutes');
-    const intervalLogs = dataLogs.filter(log => 
+    const intervalLogs = dataLogs.filter(log =>
       moment(log.timestamp).isBetween(currentTime, endTimme)
-    );  
+    );
 
     const averageSunlight = intervalLogs.reduce((total, log) => total + log.value, 0) / intervalLogs.length;
     intervalData.push(averageSunlight || 0);
@@ -25,7 +25,7 @@ const processDataForInterval = (dataLogs, startTime) => {
 
 const generateLabels = (startMoment) => {
   let labels = [];
-  for (let i = 0; i < 4; i++) { 
+  for (let i = 0; i < 4; i++) {
     labels.push(startMoment.clone().add(30 * i, 'minutes').format('h:mm A'));
   }
   return labels;
@@ -33,15 +33,16 @@ const generateLabels = (startMoment) => {
 
 const calculateRangeAndFormatTime = (dataLogs, startTime) => {
   let formattedTimeRange = '';
-  let minSunlight = Infinity;
-  let maxSunlight = -Infinity; 
+  let minValue = 0;
+  let maxValue = 100;
 
   dataLogs.forEach(log => {
     const timestamp = moment(log.timestamp);
     if (timestamp.isBetween(startTime, startTime.clone().add(2, 'hours'))) {
-      minSunlight = Math.min(minSunlight, log.value);
-      maxSunlight = Math.max(maxSunlight, log.value);
-  }});
+      minValue = Math.min(minValue, log.value);
+      maxValue = Math.max(maxValue, log.value);
+    }
+  });
 
   const now = moment();
   let timeLabel = startTime.format('MMM D, h A');
@@ -58,9 +59,9 @@ const calculateRangeAndFormatTime = (dataLogs, startTime) => {
   } else {
     formattedTimeRange = `${timeLabel} - ${startTime.clone().add(2, 'hours').format('h:mm A')}`;
   }
-  
+
   return {
-    range: minSunlight === Infinity ? "No Data" : `${minSunlight}-${maxSunlight}`,
+    range: minValue === Infinity ? "No Data" : `${minValue}-${maxValue}`,
     timeRange: formattedTimeRange
   };
 };
@@ -80,7 +81,7 @@ const Graph = ({ levelLogs }) => {
       data: processDataForInterval(levelLogs, currentWindowStart)
     }]
   };
- 
+
   let touchStartX = 0;
   let touchEndX = 0;
 
@@ -93,38 +94,38 @@ const Graph = ({ levelLogs }) => {
   };
 
 
- 
+
   const chartConfig = {
-        backgroundColor: '#ffffff',
-        backgroundGradientFrom: '#fff',
-        backgroundGradientTo: '#fff',
-        decimalPlaces: 0, 
-        color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // color for the line
-        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // color for the labels
-        style: {
-          borderRadius: 16,
-          
-        },
-        
-        propsForDots: {
-          r: '5',
-          strokeWidth: '0',
-          stroke: '#ffa726',
-          fill: '#ffa726',
-        },
+    backgroundColor: '#ffffff',
+    backgroundGradientFrom: '#fff',
+    backgroundGradientTo: '#fff',
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // color for the line
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // color for the labels
+    style: {
+      borderRadius: 16,
 
-        propsForBackgroundLines: {
-          strokeDasharray: '0', // solid background lines
-          stroke: '#e3e3e3', // color of the background lines
-        },
-      };
-      
+    },
 
-    return (
-      <View
-        onStartShouldSetResponder={() => true}
-        onMoveShouldSetResponder={() => true}
-        onResponderGrant={(evt) => {
+    propsForDots: {
+      r: '5',
+      strokeWidth: '0',
+      stroke: '#ffa726',
+      fill: '#ffa726',
+    },
+
+    propsForBackgroundLines: {
+      strokeDasharray: '0', // solid background lines
+      stroke: '#e3e3e3', // color of the background lines
+    },
+  };
+
+
+  return (
+    <View
+      onStartShouldSetResponder={() => true}
+      onMoveShouldSetResponder={() => true}
+      onResponderGrant={(evt) => {
         touchStartX = evt.nativeEvent.pageX;
       }}
       onResponderRelease={(evt) => {
@@ -132,14 +133,14 @@ const Graph = ({ levelLogs }) => {
         handleSwipeGesture();
       }}
       style={{ width: screenWidth }}
-      >
-      
+    >
+
       <View style={styles.textArea}>
         <Text style={styles.label}>RANGE</Text>
         <Text style={styles.rangeValue}>{range}</Text>
         <Text style={styles.timeRange}>{timeRange}</Text>
       </View>
-    
+
       <LineChart
         data={graphData}
         width={screenWidth}
@@ -150,7 +151,7 @@ const Graph = ({ levelLogs }) => {
     </View>
 
 
-    );
+  );
 };
 
 const styles = StyleSheet.create({
@@ -159,27 +160,27 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 
-    container: {
-      flex: 1,
-      paddingVertical:20,
-    },
+  container: {
+    flex: 1,
+    paddingVertical: 20,
+  },
 
-    label: {
-      color: 'gray', 
-      fontSize: 12,
-      fontWeight: 'bold',
-    },
-    rangeValue: {
-      color: 'black',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    timeRange: {
-      color: 'gray',
-      fontSize: 12,
-      fontWeight: 'bold',
-    },
-  });
+  label: {
+    color: 'gray',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  rangeValue: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  timeRange: {
+    color: 'gray',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+});
 
 
 export default Graph;

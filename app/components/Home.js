@@ -1,4 +1,4 @@
-import { Text, Image, ScrollView, View, TouchableOpacity, ImageBackground, StyleSheet, FlatList } from 'react-native';
+import { Text, Image, ScrollView, View, TouchableOpacity, ImageBackground, StyleSheet, FlatList, SafeAreaView } from 'react-native';
 import { FAB } from "react-native-paper";
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -79,7 +79,7 @@ const Home = ({ route, navigation }) => {
   const [plants, setPlants] = useState([]);
   //const navigation = useNavigation();
   const { userId } = route.params;
-
+  const [refreshing, setRefreshing] = useState(false);
   // const userId = "lMl4u54jZ5pjHlJhZBACJqr5j";
   console.log(userId);
   useEffect(() => {
@@ -118,41 +118,48 @@ const Home = ({ route, navigation }) => {
 
   return (
 
-    <View style={styles.container} >
-
-      <Image
-        source={require('../assets/left_background.png')}
-        style={styles.leftBackground}
-      />
-
-
-      <ImageBackground
-        source={require('../assets/add_bar_background.jpg')}
-        resizeMode="cover"
-        imageStyle={{ borderRadius: 10 }}
-        style={styles.imageBackground}
-      >
-        <FAB
-          style={styles.fab}
-          small
-          icon="plus"
-          onPress={() => {
-            console.log(userId);
-            navigation.navigate('Connect Device to Wifi', { userId: userId });
-          }}
+    <SafeAreaView style={styles.container} >
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => {
+            fetchPlants(userId);
+            setRefreshing(true);
+          }} />
+        }>
+        <Image
+          source={require('../assets/left_background.png')}
+          style={styles.leftBackground}
         />
 
-      </ImageBackground>
 
-      <Text style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'left' }}>My Plants</Text>
-      <FlatList
-        data={plants}
-        renderItem={renderPlant}
-        keyExtractor={item => item.plantId}
-        numColumns={1}
-        contentContainerStyle={styles.list}
-      />
-    </View>
+        <ImageBackground
+          source={require('../assets/add_bar_background.jpg')}
+          resizeMode="cover"
+          imageStyle={{ borderRadius: 10 }}
+          style={styles.imageBackground}
+        >
+          <FAB
+            style={styles.fab}
+            small
+            icon="plus"
+            onPress={() => {
+              console.log(userId);
+              navigation.navigate('Connect Device to Wifi', { userId: userId });
+            }}
+          />
+
+        </ImageBackground>
+
+        <Text style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'left' }}>My Plants</Text>
+        <FlatList
+          data={plants}
+          renderItem={renderPlant}
+          keyExtractor={item => item.plantId}
+          numColumns={1}
+          contentContainerStyle={styles.list}
+        />
+      </ScrollView>
+    </SafeAreaView>
 
   )
 }
