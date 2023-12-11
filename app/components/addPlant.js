@@ -74,11 +74,11 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 //     );
 // }
 
-const DismissKeyboard = ({ children }) => (
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        {children}
-    </TouchableWithoutFeedback>
-);
+// const DismissKeyboard = ({ children }) => (
+//     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+//         {children}
+//     </TouchableWithoutFeedback>
+// );
 
 const AddPlant = ({ route, navigation }) => {
     const { user_id } = route.params;
@@ -94,31 +94,31 @@ const AddPlant = ({ route, navigation }) => {
 
     const [openType, setOpenType] = useState(false);
     const [types, setTypes] = useState([
-        {label: 'Succulents', value: 0},
-        {label: 'Flowering Plant', value: 1},
-        {label: 'Herb', value: 2}
+        { label: 'Succulents', value: 0 },
+        { label: 'Flowering Plant', value: 1 },
+        { label: 'Herb', value: 2 }
     ]);
 
-    const [openSize, setOpenSize] = useState(false);
+    // const [openSize, setOpenSize] = useState(false);
     const [sizes, setSizes] = useState([
-        {label: 'Small', value: 0},
-        {label: 'Medium', value: 1},
-        {label: 'Large', value: 2}
+        { label: 'Small', value: 0 },
+        { label: 'Medium', value: 1 },
+        { label: 'Large', value: 2 }
     ]);
 
 
     const renderTags = () => {
         return sizes.map((size) => (
-          <TouchableOpacity
-            key={size.value}
-            style={[styles.tag, plantSize === size.value && styles.selectedTag]}
-            onPress={() => setPlantSize(size.value)}
-          >
-            <Text style={styles.tagText}>{size.label}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+                key={size.value}
+                style={[styles.tag, plantSize === size.value && styles.selectedTag]}
+                onPress={() => setPlantSize(size.value)}
+            >
+                <Text style={styles.tagText}>{size.label}</Text>
+            </TouchableOpacity>
         ));
-      };
-      
+    };
+
 
 
     const savePlant = () => {
@@ -129,23 +129,20 @@ const AddPlant = ({ route, navigation }) => {
 
 
     return (
-
-
-  
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : "height"}
             style={styles.container}>
 
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                 <View style={styles.inner}>
+                <View style={styles.inner}>
                     <View style={styles.inputRow}>
                         <Text style={styles.header}>Name </Text>
-                            <TextInput
-                                style={styles.input}
-                                value={plantName}
-                                onChangeText={setPlantName}
-                                placeholder="Enter Plant Name"
-                            />
+                        <TextInput
+                            style={styles.input}
+                            value={plantName}
+                            onChangeText={setPlantName}
+                            placeholder="Enter Plant Name"
+                        />
                     </View>
 
                     <View>
@@ -180,13 +177,13 @@ const AddPlant = ({ route, navigation }) => {
                     >
                         <Text style={styles.saveButtonText}>SAVE</Text>
                     </TouchableOpacity> */}
-                        
-                
 
-                        {/* <View style={styles.inner}> */}
-                            {/* <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} /> */}
 
-                            {/* <View style={styles.inputRow}>
+
+                    {/* <View style={styles.inner}> */}
+                    {/* <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} /> */}
+
+                    {/* <View style={styles.inputRow}>
                                 <Text style={styles.header}>Name </Text>
                                 <TextInput
                                     style={styles.input}
@@ -198,12 +195,12 @@ const AddPlant = ({ route, navigation }) => {
 
 
 
-                            {/* <View style={styles.inputRow}>
+                    {/* <View style={styles.inputRow}>
                         <Text style={styles.header}>Date </Text>
                         <DatePickerPlaceholder onDatePicked={(date) => setPlantDate(date)} /> */}
-                        {/* </View> */}
+                    {/* </View> */}
 
-                        {/* <View style={styles.row}>
+                    {/* <View style={styles.row}>
                         <Text style={styles.header}>Plant Type</Text>
                         <DropDownPicker
                             open={open}
@@ -217,7 +214,7 @@ const AddPlant = ({ route, navigation }) => {
                     </View> */}
 
 
-                        {/* <Text style={styles.header}>Additional Information</Text>
+                    {/* <Text style={styles.header}>Additional Information</Text>
                     <TextInput
                         style={styles.additionalInfo}
                         value={additionalInfo}
@@ -247,21 +244,22 @@ const AddPlant = ({ route, navigation }) => {
                             </View>
                         </View> */}
 
-                        <TouchableOpacity style={styles.saveButton} onPress={() => {
-                            savePlant();
-                            navigation.navigate("Set Device Properties", {
-                                user_id: user_id,
-                                plant_type: plantType,
-                                plant_size: plantSize,
-                                plant_name: plantName,
-                            })
-                        }}>
-                            <Text style={styles.saveButtonText}>SAVE</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity style={styles.saveButton} onPress={() => {
+                        savePlant();
+                        console.log("User: " + user_id + ", Type:" + plantType + ", Name:" + plantName + ", Size:" + plantSize);
+                        navigation.navigate("Set Device Properties", {
+                            user_id: user_id,
+                            plant_type: plantType,
+                            plant_size: plantSize,
+                            plant_name: plantName,
+                        })
+                    }}>
+                        <Text style={styles.saveButtonText}>SAVE</Text>
+                    </TouchableOpacity>
+                </View>
 
-                </TouchableWithoutFeedback>
-    
+            </TouchableWithoutFeedback>
+
         </KeyboardAvoidingView>
     )
 };
@@ -337,9 +335,9 @@ const styles = StyleSheet.create({
     },
 
     tagContainer: {
-        flexDirection: 'row', 
+        flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center', 
+        alignItems: 'center',
         marginBottom: 20,
     },
 
@@ -351,11 +349,11 @@ const styles = StyleSheet.create({
         margin: 5,
         alignItems: 'center',
         justifyContent: 'center',
-      },
+    },
 
-      selectedTag: {
+    selectedTag: {
         backgroundColor: 'lightgrey', // or any color to indicate selection
-      },
+    },
 
 
     // pickerContainer: {

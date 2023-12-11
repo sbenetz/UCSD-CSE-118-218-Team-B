@@ -75,13 +75,13 @@ const PlantCard = ({ plant, onPress }) => {
   )
 };
 
-const Home = ({ route }) => {
+const Home = ({ route, navigation }) => {
   const [plants, setPlants] = useState([]);
-  const navigation = useNavigation();
-
+  //const navigation = useNavigation();
   const { userId } = route.params;
-  // const userId = "lMl4u54jZ5pjHlJhZBACJqr5j";
 
+  // const userId = "lMl4u54jZ5pjHlJhZBACJqr5j";
+  console.log(userId);
   useEffect(() => {
     fetchPlants(userId);
 
@@ -136,20 +136,23 @@ const Home = ({ route }) => {
           style={styles.fab}
           small
           icon="plus"
-          onPress={() => navigation.navigate('Connect Device to Wifi', { user_id: userId })}
+          onPress={() => {
+            console.log(userId);
+            navigation.navigate('Connect Device to Wifi', { userId: userId });
+          }}
         />
 
       </ImageBackground>
 
-        <Text style={{fontSize: 28, fontWeight: 'bold', textAlign:'left'}}>My Plants</Text>
-        <FlatList
-          data={plants}
-          renderItem={renderPlant}
-          keyExtractor={item => item.plantId}
-          numColumns={1}
-          contentContainerStyle={styles.list}
-        />
-      </View>
+      <Text style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'left' }}>My Plants</Text>
+      <FlatList
+        data={plants}
+        renderItem={renderPlant}
+        keyExtractor={item => item.plantId}
+        numColumns={1}
+        contentContainerStyle={styles.list}
+      />
+    </View>
 
   )
 }

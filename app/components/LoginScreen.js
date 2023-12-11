@@ -5,13 +5,22 @@ import axios from 'axios';
 const LoginScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
+    const [valid, setValid] = useState(true);
     const handleLogin = () => {
         axios.post('https://fit-glowworm-promptly.ngrok-free.app/user/login', { username, password })
             .then(response => {
                 const userId = response.data.userId;
-                navigation.navigate('Home', { user_id: userId });
-                console.log('Login successful', response.data);
+                if (userId != null) {
+                    setValid(true);
+                    console.log('Login successful', response.data);
+                    navigation.replace('Home', { userId: userId });
+
+                }
+                else {
+                    setValid(false);
+                    console.log("Login Credentials Invalid")
+                }
+
             })
             .catch(error => {
                 // Handle login error
@@ -38,7 +47,7 @@ const LoginScreen = ({ navigation }) => {
                     style={styles.input}
                     secureTextEntry
                 />
-
+                {!valid && <Text style={{ color: "red" }}>Login Credentials Invalid. Please try again.</Text>}
                 <Button title="Login" onPress={handleLogin} />
                 <Text onPress={() => navigation.navigate('Signup')}>Don't have an account? Sign up</Text>
             </View>

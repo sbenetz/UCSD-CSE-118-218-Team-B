@@ -1,4 +1,4 @@
-import { Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, Button } from 'react-native';
 import { AppRegistry } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -30,14 +30,27 @@ export default function App() {
   //   prepare();
   // }, []);
 
-  
+
   return (
     <NavigationContainer>
       <Stack.Navigator >
         {/* <Stack.Screen name="Splash" component={SplashScreen} /> */}
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} options={{
+          gestureEnabled: false, headerShown: true,
+          headerLeft: () => <></>
+        }} />
         <Stack.Screen name="Signup" component={SignupScreen} />
-        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen options={({ navigation }) => ({
+          gestureEnabled: false, headerShown: true,
+          headerLeft: () => <></>, headerRight: () => (
+            <Button
+              onPress={() => navigation.navigate("Login")}
+              title="Log Out"
+              color="red"
+
+            />
+          ),
+        })} name="Home" component={Home} />
         <Stack.Screen name="AddPlant" component={addPlant} />
         <Stack.Screen name="PlantProfile" component={PlantProfile} />
         <Stack.Screen name="Connect Device to Wifi" component={EnterWifi} />

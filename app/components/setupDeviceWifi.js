@@ -24,7 +24,7 @@ const computeWiFiHEX = (ssid, password) => {
     return stringToHex(str);
 }
 const EnterWifi = ({ route, navigation }) => {
-    const { user_id } = route.params;
+    const { userId } = route.params;
     //const [hex_output, changeHex] = useState('');
     const [wifi_ssid, setSSID] = useState('');
     const [password, setPassword] = useState('');
@@ -62,7 +62,7 @@ const EnterWifi = ({ route, navigation }) => {
                         {computeWiFiHEX(wifi_ssid.trim(), password.trim())}
                     </Text>
                     <Pressable style={styles.button} onPress={() => navigation.navigate('AddPlant', {
-                        user_id: user_id
+                        user_id: userId
                     })}>
                         <Text style={{ fontSize: 16, fontWeight: "bold", color: "white" }}>{"Done"}</Text>
                     </Pressable>
