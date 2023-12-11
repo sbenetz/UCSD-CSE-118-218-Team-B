@@ -1,97 +1,158 @@
-import { Text, Image, ScrollView, View, TouchableOpacity, ImageBackground, StyleSheet, FlatList} from 'react-native';
+import { Text, Image, ScrollView, View, TouchableOpacity, ImageBackground, StyleSheet, FlatList } from 'react-native';
 import { FAB } from "react-native-paper";
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
 import React, { useState, useEffect } from 'react';
 
-const fetchPlants = async () => {
-  return [
-    { id: '1', name: 'Goldfish Plant', image: require('../assets/goldfish-plant.png'), health: 4 },
-    { id: '2', name: 'Pathos', image: require('../assets/pathos-plant.png'), health: 5 },
-    // ... more plants
-  ];
+
+
+// const healthActiveColor = "#70A327";
+// const healthInactiveColor = "rgba(112, 163, 39, 0.5)";
+// const unhealthActiveColor = "#FF0120";
+// const unhealthInactiveColor = "rgba(255, 1, 32, 0.5)";
+
+// const Star = ({ isActive }) => {
+//   <Text style={[styles.star, { color: isActive ? activeColor : inactiveColor }]}>★</Text>
+// }
+
+
+const plantSizeMapping = {
+  0: "Small",
+  1: "Medium",
+  2: "Large",
+};
+
+const plantTypeMapping = {
+  0: 'Succulent',
+  2: 'Flowering Plant',
+  3: 'Herb',
 };
 
 const PlantCard = ({ plant, onPress }) => {
-  const [rating, setRating] = useState(plant.health);
+  // const [rating, setRating] = useState(plant.health);
 
-  const healthActiveColor = "#70A327";
-  const healthInactiveColor = "rgba(112, 163, 39, 0.5)";
-  const unhealthActiveColor = "#FF0120";
-  const unhealthInactiveColor = "rgba(255, 1, 32, 0.5)";
-
-  const activeColor = rating > 2 ? healthActiveColor : unhealthActiveColor;
-  const inactiveColor = rating > 2 ? healthInactiveColor : unhealthInactiveColor;
+  // const activeColor = rating > 3 ? healthActiveColor : unhealthActiveColor;
+  // const inactiveColor = rating > 3 ? healthInactiveColor : unhealthInactiveColor;
 
   return (
-    <View style={styles.card}>
-      <TouchableOpacity onPress={() => onPress(plant)}>
+    <View>
+      {/* <TouchableOpacity onPress={() => onPress(plant)}>
         <Image source={plant.image} style={styles.cardImage} />
+      </TouchableOpacity> */}
+
+      <TouchableOpacity onPress={() => onPress(plant)}>
+        <View style={styles.row}>
+          <View style={styles.cardLabel}>
+            <Text style={styles.cardTitle}>{plant.plantName}</Text>
+
+            <Text style={styles.textStyle}>
+              <Text style={styles.boldText}>Plant Type:</Text> {plantTypeMapping[plant.plantType] || 'Unknown Type'}
+            </Text>
+
+            <Text style={styles.textStyle}>
+              <Text style={styles.boldText}>Plant Size:</Text> {plantSizeMapping[plant.plantSize] || 'Unknown Size'}
+            </Text>
+          </View>
+        </View>
       </TouchableOpacity>
 
-      <View style={styles.cardLabel}>
-        <Text style={styles.cardTitle}>{plant.name}</Text>
-      </View>
+      {/* <View style={styles.stars}>
+          {[...Array(5)].map((_, index) => (
+          <Text
+          key={index}
+          style={{
+            color: index < rating ? activeColor : inactiveColor,
+            ...styles.star,
+          }}
+        >
+        ★
+      </Text>
+          ))}
+        </View> */}
+
     </View>
   )
 };
 
-const Home = () => {
+const Home = ({ route, navigation }) => {
   const [plants, setPlants] = useState([]);
-  const navigation = useNavigation();
+  //const navigation = useNavigation();
+  const { userId } = route.params;
 
+  // const userId = "lMl4u54jZ5pjHlJhZBACJqr5j";
+  console.log(userId);
   useEffect(() => {
-    const getPlants = async () => {
-      const data = await fetchPlants();
-      setPlants(data);
-    };
-    getPlants();
-  }, []);
+    fetchPlants(userId);
+
+  }, [userId]);
+
+  const fetchPlants = async (userId) => {
+    axios.get(`https://fit-glowworm-promptly.ngrok-free.app/user/${userId}/plants`)
+      .then(response => {
+        setPlants(response.data.plants);
+        console.log(response.data.plants)
+      })
+      .catch(error => {
+        Alert.alert('Error', 'Unable to fetch plants');
+      });
+  };
+
 
   const goToPlantProfile = (plant) => {
-    navigation.navigate('PlantProfile', { plantId: plant.id });
+    navigation.navigate('PlantProfile', plant);
   }
 
-  
-  const renderPlant = ({ item, index }) => {
-    const isEven = index % 2 === 0;
-    const imageStyle = isEven ? styles.leftImage : styles.rightImage;
+
+  const renderPlant = ({ item }) => {
+    // const isEven = index % 2 === 0;
+    // const imageStyle = isEven ? styles.leftImage : styles.rightImage;
 
     return (
-      <View style={imageStyle}>
+      <View>
         <PlantCard plant={item} onPress={goToPlantProfile} />
       </View>
     );
   };
 
-  
+
   return (
-  
-      <View style={styles.container} >
-        <ImageBackground
-          source = {require('../assets/add_bar_background.jpg')}
-          resizeMode = "cover"
-          imageStyle={{borderRadius: 10}}
-          style = {styles.imageBackground}
-        >
-          <FAB
-            style={styles.fab}
-            small
-            icon="plus"
-            onPress={() => navigation.navigate('AddPlant')}
-          />
 
-        </ImageBackground>
+    <View style={styles.container} >
 
-        <Text style={{fontSize: 28, fontWeight: 'bold', textAlign:'left'}}>My Plants</Text>
-        <FlatList
-          data={plants}
-          renderItem={renderPlant}
-          keyExtractor={item => item.id}
-          numColumns={2}
-          contentContainerStyle={styles.list}
+      <Image
+        source={require('../assets/left_background.png')}
+        style={styles.leftBackground}
+      />
+
+
+      <ImageBackground
+        source={require('../assets/add_bar_background.jpg')}
+        resizeMode="cover"
+        imageStyle={{ borderRadius: 10 }}
+        style={styles.imageBackground}
+      >
+        <FAB
+          style={styles.fab}
+          small
+          icon="plus"
+          onPress={() => {
+            console.log(userId);
+            navigation.navigate('Connect Device to Wifi', { userId: userId });
+          }}
         />
-      </View>
+
+      </ImageBackground>
+
+      <Text style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'left' }}>My Plants</Text>
+      <FlatList
+        data={plants}
+        renderItem={renderPlant}
+        keyExtractor={item => item.plantId}
+        numColumns={1}
+        contentContainerStyle={styles.list}
+      />
+    </View>
 
   )
 }
@@ -109,6 +170,15 @@ const styles = StyleSheet.create({
   //   justifyContent: 'center',
   //   padding: 20,
   // },
+
+  leftBackground: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    width: 260,
+    height: 468,
+  },
+
 
   imageBackground: {
     height: 60,
@@ -130,27 +200,70 @@ const styles = StyleSheet.create({
   },
 
 
-  card: {
-    flex: 1,
-  },
 
-  cardImage: {
-    width: 150,
-    height: 160,
-    borderRadius: 10,
-  },
+
+  // cardImage: {
+  //   width: 150,
+  //   height: 160,
+  //   borderRadius: 10,
+  // },
 
   leftImage: {
     flex: 1,
-    marginRight: 10, 
-    marginBottom: 10, 
+    marginRight: 10,
+    marginBottom: 10,
   },
 
   rightImage: {
     flex: 1,
-    marginLeft: 20, 
-    marginBottom: 10, 
+    marginLeft: 20,
+    marginBottom: 10,
   },
+
+  cardLabel: {
+    flex: 1,
+    marginTop: 10,
+    borderRadius: 10,
+    backgroundColor: "white",
+    borderColor: "rgba(0, 0, 0, 0.25)",
+  },
+
+  cardTitle: {
+    fontSize: 18,
+    marginVertical: 5,
+    paddingHorizontal: 10,
+    fontWeight: 'bold',
+  },
+
+  // stars: {
+  //   justifyContent: 'center',
+  //   flexDirection: 'row',
+  //   marginBottom: 2,
+  // },
+
+  // star: {
+  //   fontSize: 18,
+  //   marginRight: 5,
+  // },
+
+  boldText: {
+    fontWeight: 'bold',
+  },
+
+  row: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    marginBottom: 10,
+  },
+
+  textStyle: {
+    paddingHorizontal: 18,
+  },
+
+
 
 });
 
