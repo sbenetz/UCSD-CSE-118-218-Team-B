@@ -141,15 +141,15 @@ const Home = ({ route }) => {
 
       </ImageBackground>
 
-      <Text style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'left' }}>My Plants</Text>
-      <FlatList
-        data={plants}
-        renderItem={renderPlant}
-        keyExtractor={item => item.id}
-        numColumns={1}
-        contentContainerStyle={styles.list}
-      />
-    </View>
+        <Text style={{fontSize: 28, fontWeight: 'bold', textAlign:'left'}}>My Plants</Text>
+        <FlatList
+          data={plants}
+          renderItem={renderPlant}
+          keyExtractor={item => item.plantId}
+          numColumns={1}
+          contentContainerStyle={styles.list}
+        />
+      </View>
 
   )
 }

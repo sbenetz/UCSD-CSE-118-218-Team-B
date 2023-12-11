@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, ScrollView, View, Button, Image, Text, TextInput, Switch, TouchableOpacity, StyleSheet, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -83,41 +83,105 @@ const DismissKeyboard = ({ children }) => (
 const AddPlant = ({ route, navigation }) => {
     const { user_id } = route.params;
     const [plantName, setPlantName] = useState('');
-    const [plantDate, setPlantDate] = useState('');
     const [plantType, setPlantType] = useState('');
     const [plantSize, setPlantSize] = useState('');
-    const [additionalInfo, setAdditionalInfo] = useState('');
-    const [wateringMode, setWateringMode] = useState(false);
-    const [wateringFrequency, setWateringFrequency] = useState('');
-    const [wateringAmount, setWateringAmount] = useState('');
+    // const [plantDate, setPlantDate] = useState('');
+    // const [additionalInfo, setAdditionalInfo] = useState('');
+    // const [wateringMode, setWateringMode] = useState(false);
+    // const [wateringFrequency, setWateringFrequency] = useState('');
+    // const [wateringAmount, setWateringAmount] = useState('');
 
 
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState([]);
-    const [items, setItems] = useState([
-        { label: 'Succulents', value: 1 },
-        { label: 'Flowering Plant', value: 2 },
-        { label: 'Cacti', value: 3 }
+    const [openType, setOpenType] = useState(false);
+    const [types, setTypes] = useState([
+        {label: 'Succulents', value: 0},
+        {label: 'Flowering Plant', value: 1},
+        {label: 'Herb', value: 2}
     ]);
 
-    // const savePlant = () => {
-    //     // Save plant to database
-    //     // Redirect to home page
-    //     console.log('Plant saved!');
-    // };
+    const [openSize, setOpenSize] = useState(false);
+    const [sizes, setSizes] = useState([
+        {label: 'Small', value: 0},
+        {label: 'Medium', value: 1},
+        {label: 'Large', value: 2}
+    ]);
+
+
+    const renderTags = () => {
+        return sizes.map((size) => (
+          <TouchableOpacity
+            key={size.value}
+            style={[styles.tag, plantSize === size.value && styles.selectedTag]}
+            onPress={() => setPlantSize(size.value)}
+          >
+            <Text style={styles.tagText}>{size.label}</Text>
+          </TouchableOpacity>
+        ));
+      };
+      
+
+
+    const savePlant = () => {
+        // Save plant to database
+        // Redirect to home page
+        console.log('Plant saved!');
+    };
+
 
     return (
 
-        <KeyboardAvoidingView
+
+          
+        <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : "height"}
             style={styles.container}>
 
-            <ScrollView>
-
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 
-                    <View style={styles.inner}>
-                        {/* <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} /> */}
+                    <View style={styles.inputRow}>
+                        <Text style={styles.header}>Name </Text>
+                            <TextInput
+                                style={styles.input}
+                                value={plantName}
+                                onChangeText={setPlantName}
+                                placeholder="Enter Plant Name"
+                            />
+                    </View>
+
+                    <View>
+                        <View style={styles.row}>
+                            <Text style={styles.header}>Plant Type</Text>
+                            <DropDownPicker
+                                placeholder="Select an item"
+                                placeholderStyle={{ color: 'gray' }}
+                                style={{ width: 260 }}
+                                dropDownContainerStyle={{ width: 260 }}
+                                open={openType}
+                                value={plantType}
+                                items={types}
+                                setOpen={setOpenType}
+                                setValue={setPlantType}
+                                setItems={setTypes}
+                                multiple={false}
+                            />
+                        </View>
+                    </View>
+
+                    <View style={openType ? styles.adjustedRow : null}>
+                        <Text style={styles.header}>Plant Type</Text>
+                        <View style={styles.tagContainer}>
+                            {renderTags()}
+                        </View>
+                    </View>
+
+                    <TouchableOpacity 
+                        style={[styles.saveButton, openSize ? styles.adjustedRow : null]} 
+                        onPress={savePlant}
+                    >
+                        <Text style={styles.saveButtonText}>SAVE</Text>
+                    </TouchableOpacity>
+                        
+                
 
                         <View style={styles.inner}>
                             <ImagePickerPlaceholder onImagePicked={(image) => console.log(image)} />
@@ -164,24 +228,7 @@ const AddPlant = ({ route, navigation }) => {
                         scrollEnabled={true}
                     /> */}
 
-                        <View style={styles.inputRow}>
-                            <Text style={styles.header}>Date </Text>
-                            <DatePickerPlaceholder onDatePicked={(date) => setPlantDate(date)} />
-                        </View>
-
-
-                        <Text style={styles.header}>Additional Information</Text>
-                        <TextInput
-                            style={styles.additionalInfo}
-                            value={additionalInfo}
-                            onChangeText={setAdditionalInfo}
-                            placeholder="Enter Additional Info"
-                            multiline={true}
-                            numberOfLines={4}
-                            scrollEnabled={true}
-                        />
-
-                        <Text style={styles.header}>Plant Watering System</Text>
+                    {/* <Text style={styles.header}>Plant Watering System</Text>
                         <View style={styles.wateringSystem}>
                             <View style={styles.row}>
                                 <Text style={styles.label}>Watering Mode</Text>
@@ -191,14 +238,14 @@ const AddPlant = ({ route, navigation }) => {
                                 />
                             </View>
 
-                            {/* <View style={styles.row}>
+                            <View style={styles.row}>
                                 <Text style={styles.label}>Watering Frequency</Text>
                             </View>
 
                             <View style={styles.row}>
                                 <Text style={styles.label}>Watering Amount</Text>
-                            </View> */}
-                        </View>
+                            </View>
+                        </View> */}
 
                         <TouchableOpacity style={styles.saveButton} onPress={() => {
                             savePlant();
@@ -289,26 +336,51 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
 
-
-    pickerContainer: {
-        flex: 1,
-        height: 40,
-        backgroundColor: '#FFFFFF',
-        marginBottom: 10,
-        borderRadius: 5,
+    tagContainer: {
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
+        alignItems: 'center', 
+        marginBottom: 20,
     },
 
-    picker: {
-        width: '100%',
-    },
+    tag: {
+        borderWidth: 1,
+        borderColor: 'grey',
+        borderRadius: 20,
+        padding: 10,
+        margin: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
 
-    additionalInfo: {
-        height: 100,
-        textAlignVertical: 'top',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 3,
-        padding: 5,
-        marginBottom: 10,
+      selectedTag: {
+        backgroundColor: 'lightgrey', // or any color to indicate selection
+      },
+
+
+    // pickerContainer: {
+    //     flex: 1,
+    //     height: 20,
+    //     backgroundColor: '#FFFFFF',
+    //     marginBottom: 10,
+    //     borderRadius: 5,
+    // },
+
+    // picker: {
+    //     width: '100%',
+    // },
+
+    // additionalInfo: {
+    //     height: 100,
+    //     textAlignVertical: 'top',
+    //     backgroundColor: '#FFFFFF',
+    //     borderRadius: 3,
+    //     padding: 5,
+    //     marginBottom: 10,
+    //   },
+
+    adjustedRow: {
+        marginTop: 150,
     },
 
     saveButton: {
