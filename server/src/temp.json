@@ -1,9 +1,9 @@
 { "data": [
 {
-	"timestamp": "2023-12-08 00:00:00",
-	"soilMoisture": 68,
-	"sunlight": 0,
-	"deviceBattery": 0
+	"timestamp": "2023-12-11 13:00:00",
+	"soilMoisture": 72,
+	"sunlight": 500,
+	"deviceBattery": 98
 },
 
 {
