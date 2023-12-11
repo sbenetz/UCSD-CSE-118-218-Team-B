@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, View, Button, Image, Text, TextInput, Switch, TouchableOpacity, StyleSheet, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, View, RefreshControl,Button, Image, Text, TextInput, Switch, TouchableOpacity, StyleSheet, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import axios from 'axios';
 import WateringHistory from './WateringHistory';
 import Graph from './Graph';
@@ -35,6 +35,7 @@ const PlantProfile = (route) => {
         try {
             const response = await axios.get(`https://fit-glowworm-promptly.ngrok-free.app/plants/${plant.plantId}`);
             setPlantInfo(response.data);
+            setRefreshing(false);
         } catch (error) {
             console.error('Error fetching plant info', error);
         }

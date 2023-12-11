@@ -8,15 +8,21 @@ const processDataForInterval = (dataLogs, startTime) => {
   const intervalData = [];
 
   let currentTime = moment(startTime);
-
+  
   for (let i = 0; i < 4; i++) {
     const endTimme = currentTime.clone().add(30, 'minutes');
-    const intervalLogs = dataLogs.filter(log =>
-      moment(log.timestamp).isBetween(currentTime, endTimme)
-    );
+    let arr = []
+    //console.log(`currTime: ${currentTime}, eT: ${endTimme}`)
+    const intervalLogs = dataLogs.filter(log => {
+      return moment(log.timestamp).isBetween(currentTime, endTimme);
+      //console.log(`${log.timestamp}: ${log.value}`);
+    });
 
     const averageSunlight = intervalLogs.reduce((total, log) => total + log.value, 0) / intervalLogs.length;
+
+    console.log(intervalLogs);
     intervalData.push(averageSunlight || 0);
+
 
     currentTime = endTimme;
   }

@@ -1,4 +1,4 @@
-import { Text, Image, ScrollView, View, TouchableOpacity, ImageBackground, StyleSheet, FlatList, SafeAreaView } from 'react-native';
+import { Text, Image, ScrollView, View, TouchableOpacity, ImageBackground, StyleSheet, FlatList, SafeAreaView, RefreshControl } from 'react-native';
 import { FAB } from "react-native-paper";
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -118,14 +118,8 @@ const Home = ({ route, navigation }) => {
 
   return (
 
-    <SafeAreaView style={styles.container} >
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => {
-            fetchPlants(userId);
-            setRefreshing(true);
-          }} />
-        }>
+    <View style={styles.container} >
+      
         <Image
           source={require('../assets/left_background.png')}
           style={styles.leftBackground}
@@ -158,8 +152,7 @@ const Home = ({ route, navigation }) => {
           numColumns={1}
           contentContainerStyle={styles.list}
         />
-      </ScrollView>
-    </SafeAreaView>
+    </View>
 
   )
 }
