@@ -1,5 +1,6 @@
 #!/bin/bash
 # Build script
+# This script copies the src/ directory & runServer.sh and updateServer.sh from server_scripts/ to the Raspberry Pi server, then it runs the updateServer.sh script on that server so that the server is updated with the new code and the API server service itself is restarted on the RaspberryPi
 
 SRC_DIR=src
 UPDATE_SCRIPT_NAME=updateServer.sh
@@ -29,13 +30,11 @@ zip -r ${SRC_DIR}.zip ${SRC_DIR}
 
 # Send zipped src directory & the update script to remote
 CMD1="scp -P ${PORT} ${SRC_DIR}.zip ${UPDATE_SCRIPT_PATH} ${RUN_SCRIPT_PATH} ${USERNAME}@${HOST}:${API_SERVER_DIR}"
-# CMD1="scp ${SRC_DIR}.zip ${UPDATE_SCRIPT_PATH} ${RUN_SCRIPT_PATH} root@raspberrypiteamb.local:${API_SERVER_DIR}/"
 echo "cmd: $CMD1"
 eval "$CMD1"
 
 # Run the update script on the remote
 CMD2="ssh -p ${PORT} ${USERNAME}@${HOST} 'cd ${API_SERVER_DIR}; ./${UPDATE_SCRIPT_NAME} ${API_SERVER_PORT};'"
-#CMD2="ssh root@raspberrypiteamb.local 'cd ${API_SERVER_DIR}; ./${UPDATE_SCRIPT_NAME} ${API_SERVER_PORT};'"
 echo "cmd: $CMD2"
 eval "$CMD2"
 

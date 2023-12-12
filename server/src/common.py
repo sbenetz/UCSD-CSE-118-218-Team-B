@@ -7,7 +7,12 @@ DB_DIRECTORY = 'database'
 DB_FILE_NAME = 'database.db'
 PATH_TO_DB = f"../{DB_DIRECTORY}/{DB_FILE_NAME}"
 
+# Device Control
+# DEVICE_SLEEP_TIME_S = 1800 # 30 min
+# DEVICE_SLEEP_TIME_S = 900 # 15 min
+DEVICE_SLEEP_TIME_S = 10 # 15 seconds
 
+forceWaterList = [] # if deviceId is in this list, do force water
 
 
 # - POST Request Bodies -
@@ -19,11 +24,13 @@ class DeviceInit(BaseModel):
   userId: str
   plantName: str
   plantType: int
+  plantSize: int # 0: sm, 1: md, 2: lg
 
 class DeviceCheckIn(BaseModel):
   deviceId: str
   soilMoisture: int
   sunlight: int
+  battery: int
 
 class DeviceCredentials(BaseModel):
   deviceId: str
@@ -36,7 +43,8 @@ class UserId(BaseModel):
 class Plant(BaseModel):
   plantId: str
   plantName: str
-  plantType: str
+  plantType: int
+  plantSize: int
 
 class PlantsReturn(BaseModel):
   plants: List[Plant] | None = None
@@ -46,8 +54,13 @@ class SensorDataLog(BaseModel):
   timestamp: str
   soilMoisture: int
   sunlight: int
+  deviceBattery: int
 
 class PlantInfoReturn(BaseModel):
   sensorDataLogs: List[SensorDataLog]
   waterHistory: List[str]
   errorMessage: str | None = None
+
+class DeviceCheckInReturn(BaseModel):
+  goalMoisture: int
+  sleepTime: int

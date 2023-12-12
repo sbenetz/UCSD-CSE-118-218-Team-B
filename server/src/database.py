@@ -22,6 +22,7 @@ class DEVICES:
   USER_ID = 'userId'
   PLANT_NAME = 'plantName'
   PLANT_TYPE = 'plantType'
+  PLANT_SIZE = 'plantSize'
 
 # DEVICE LOGS Table
 class LOGS:
@@ -32,6 +33,7 @@ class LOGS:
   TIMESTAMP = 'timestamp'
   SOIL_MOISTURE = 'soilMoisture'
   SUNLIGHT = 'sunlight'
+  DEVICE_BATTERY = 'deviceBattery'
 
 class WATER_LOGS:
   TABLE_NAME = 'waterLogs'
@@ -39,6 +41,15 @@ class WATER_LOGS:
   LOG_ID = 'logId'
   DEVICE_ID = 'deviceId'
   TIMESTAMP = 'timestamp'
+
+class PLANT_TYPES:
+  TABLE_NAME = 'plantTypes'
+  # column names 
+  TYPE_ID = 'typeId'
+  SIZE = 'size'
+  TYPE_NAME = 'typeName'
+  SOIL_MOIST_THRESH = 'soilMoistThresh'
+  SOIL_MOIST_GOAL = 'soilMoistGoal'
 
 
 class Database:
@@ -94,7 +105,7 @@ class Database:
   
   def get_plants(self, userId) -> (List[Plant], str):
     """Return a list of all the plants for the given user.
-    Returns: (list_of_plants, None) on success, (None, errorMessage) on failure"""
+    Returns: (list_of_plants, None) on success, ([], errorMessage) on failure"""
 
     # Verify userId exists
     if not self.__exists(USERS.TABLE_NAME, USERS.USER_ID, userId):
@@ -110,7 +121,8 @@ class Database:
       plant = Plant(
         plantId=row[DEVICES.DEVICE_ID], 
         plantName=row[DEVICES.PLANT_NAME], 
-        plantType=row[DEVICES.PLANT_TYPE]
+        plantType=row[DEVICES.PLANT_TYPE],
+        plantSize=row[DEVICES.PLANT_SIZE]
       )
       plants.append(plant)
       row = result.fetchone()
@@ -119,12 +131,12 @@ class Database:
   
   def get_plant_sensor_data_logs(self, plantId) -> (List[SensorDataLog], str):
     """Return a list of the sensor data longs for the plant (deviceId = plantId)
-    Returns: (list_of_sensor_data_logs, None) on success, (None, errorMessage) on failure"""
+    Returns: (list_of_sensor_data_logs, None) on success, ([], errorMessage) on failure"""
     deviceId = plantId
 
     # Verify deviceId exists
     if not self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, deviceId):
-      return (None, "deviceId does not exist in devices table")
+      return ([], "deviceId does not exist in devices table")
     
     # Get device's sensor data logs
     result = self.__get_sensor_data_logs(deviceId)
@@ -136,7 +148,8 @@ class Database:
       sensorLog = SensorDataLog(
         timestamp=row[LOGS.TIMESTAMP], 
         soilMoisture=row[LOGS.SOIL_MOISTURE], 
-        sunlight=row[LOGS.SUNLIGHT]
+        sunlight=row[LOGS.SUNLIGHT],
+        deviceBattery=row[LOGS.DEVICE_BATTERY]
       )
       sensor_logs.append(sensorLog)
       row = result.fetchone()
@@ -150,7 +163,7 @@ class Database:
 
     # Verify deviceId exists
     if not self.__exists(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, deviceId):
-      return (None, "deviceId does not exist in devices table")
+      return ([], "deviceId does not exist in devices table")
     
     # Get device's sensor data logs
     result = self.__get_water_history(deviceId)
@@ -178,7 +191,7 @@ class Database:
     
     # Add new entry to Devices Table
     deviceId = self.__generate_uniq_device_id()
-    self.__insert_devices(deviceId, data.userId, data.plantName, data.plantType)
+    self.__insert_devices(deviceId, data.userId, data.plantName, data.plantType, data.plantSize)
     return deviceId
   
   def device_check_in(self, data: DeviceCheckIn) -> None:
@@ -190,9 +203,35 @@ class Database:
       return
     
     # Add entry to deviceLogs table
-    self.__insert_device_logs(data.deviceId, data.soilMoisture, data.sunlight)
+    self.__insert_device_logs(data.deviceId, data.soilMoisture, data.sunlight, data.battery)
     return
   
+  def water_logic(self, data: DeviceCheckIn) -> int:
+    """Return the soil moisture level to water to if watering is requested,
+     -1 if watering is not requested"""
+
+    # Get soil moisture threshold
+    plantType = self.__get_col_from_db(DEVICES.TABLE_NAME, DEVICES.PLANT_TYPE, DEVICES.DEVICE_ID, data.deviceId)
+    plantSize = self.__get_col_from_db(DEVICES.TABLE_NAME, DEVICES.PLANT_SIZE, DEVICES.DEVICE_ID, data.deviceId)
+    print(f"plantType: {plantType}, plantSize: {plantSize}, ", end="")
+    soilMoistThresh = self.__get_col_from_db_2(PLANT_TYPES.TABLE_NAME, PLANT_TYPES.SOIL_MOIST_THRESH, PLANT_TYPES.TYPE_ID, plantType, PLANT_TYPES.SIZE, plantSize)
+    soilMoistGoal = self.__get_col_from_db_2(PLANT_TYPES.TABLE_NAME, PLANT_TYPES.SOIL_MOIST_GOAL, PLANT_TYPES.TYPE_ID, plantType, PLANT_TYPES.SIZE, plantSize)
+    print(f"soilMoistThresh: {soilMoistThresh}, soilMoistGoal: {soilMoistGoal}")
+
+    # Do force water if applicable
+    if(data.deviceId in forceWaterList):
+      forceWaterList.remove(data.deviceId)
+      print(f"force water on {data.deviceId}. resultingList: {forceWaterList}")
+      self.device_water_confirm(data)
+      return soilMoistGoal
+
+    if(data.soilMoisture < soilMoistThresh):
+      self.device_water_confirm(data)
+      return soilMoistGoal
+    else:
+      return -1
+
+
   def device_water_confirm(self, data: DeviceCredentials) -> None:
     """Log timestamp to waterLogs for the given device"""
     
@@ -204,6 +243,15 @@ class Database:
     # Add entry to waterLogs table
     self.__insert_water_logs(data.deviceId)
     return
+  
+  def device_reset(self, data: DeviceCredentials) -> None:
+    """Remove device from devices & all of it's logs"""
+
+    self.__remove_from_db(DEVICES.TABLE_NAME, DEVICES.DEVICE_ID, data.deviceId)
+    self.__remove_from_db(LOGS.TABLE_NAME, LOGS.DEVICE_ID, data.deviceId)
+    self.__remove_from_db(WATER_LOGS.TABLE_NAME, WATER_LOGS.DEVICE_ID, data.deviceId)
+
+
     
 
 
@@ -239,16 +287,16 @@ class Database:
     self.cursor.execute(f"INSERT INTO {USERS.TABLE_NAME} VALUES (?, ?, ?)", params)
     self.connection.commit()
 
-  def __insert_devices(self, deviceId, userId, plantName, plantType):
+  def __insert_devices(self, deviceId, userId, plantName, plantType, plantSize):
     """insert new row into devices table"""
-    params = (deviceId, userId, plantName, plantType)
-    self.cursor.execute(f"INSERT INTO {DEVICES.TABLE_NAME} VALUES (?, ?, ?, ?)", params)
+    params = (deviceId, userId, plantName, plantType, plantSize)
+    self.cursor.execute(f"INSERT INTO {DEVICES.TABLE_NAME} VALUES (?, ?, ?, ?, ?)", params)
     self.connection.commit()
 
-  def __insert_device_logs(self, deviceId, soilMoisture, sunlight):
+  def __insert_device_logs(self, deviceId, soilMoisture, sunlight, deviceBattery):
     """insert new row into deviceLogs table"""
-    params = (deviceId, soilMoisture, sunlight)
-    self.cursor.execute(f"INSERT INTO {LOGS.TABLE_NAME} ({LOGS.DEVICE_ID}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT}) VALUES (?, ?, ?)", params)
+    params = (deviceId, soilMoisture, sunlight, deviceBattery)
+    self.cursor.execute(f"INSERT INTO {LOGS.TABLE_NAME} ({LOGS.DEVICE_ID}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT}, {LOGS.DEVICE_BATTERY}) VALUES (?, ?, ?, ?)", params)
     self.connection.commit()
 
   def __insert_water_logs(self, deviceId):
@@ -260,13 +308,13 @@ class Database:
   def __get_user_plants(self, userId):
     """returns the plants for a user"""
     params = (userId,)
-    result = self.cursor.execute(f"SELECT {DEVICES.DEVICE_ID}, {DEVICES.PLANT_NAME}, {DEVICES.PLANT_TYPE} FROM {DEVICES.TABLE_NAME} WHERE {DEVICES.USER_ID} = ?", params)
+    result = self.cursor.execute(f"SELECT {DEVICES.DEVICE_ID}, {DEVICES.PLANT_NAME}, {DEVICES.PLANT_TYPE}, {DEVICES.PLANT_SIZE} FROM {DEVICES.TABLE_NAME} WHERE {DEVICES.USER_ID} = ?", params)
     return result 
   
   def __get_sensor_data_logs(self, deviceId):
     """returns the sensor data logs for a device"""
     params = (deviceId,)
-    result = self.cursor.execute(f"SELECT {LOGS.TIMESTAMP}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT} FROM {LOGS.TABLE_NAME} WHERE {LOGS.DEVICE_ID} = ?", params)
+    result = self.cursor.execute(f"SELECT {LOGS.TIMESTAMP}, {LOGS.SOIL_MOISTURE}, {LOGS.SUNLIGHT}, {LOGS.DEVICE_BATTERY} FROM {LOGS.TABLE_NAME} WHERE {LOGS.DEVICE_ID} = ?", params)
     return result 
   
   def __get_water_history(self, deviceId):
@@ -274,6 +322,25 @@ class Database:
     params = (deviceId,)
     result = self.cursor.execute(f"SELECT {WATER_LOGS.TIMESTAMP} FROM {WATER_LOGS.TABLE_NAME} WHERE {WATER_LOGS.DEVICE_ID} = ?", params)
     return result 
+  
+  def __remove_from_db(self, tableName, column, value):
+    """remove all items from tableName where column=value"""
+    params = (value,)
+    self.cursor.execute(f"DELETE FROM {tableName} WHERE {column} = ?", params)
+    self.connection.commit()
+    return
+  
+  def __get_col_from_db(self, tableName, getCol, whereCol, value):
+    """get the getCol from tableName where whereCol=value. Return a value."""
+    params = (value,)
+    result = self.cursor.execute(f"SELECT {getCol} FROM {tableName} WHERE {whereCol} = ?", params)
+    return result.fetchone()[getCol]
+    
+  def __get_col_from_db_2(self, tableName, getCol, whereCol1, value1, whereCol2, value2):
+    """get the getCol from tableName where whereCol1=value1 AND whereCol2=value2. Return a value"""
+    params = (value1, value2)
+    result = self.cursor.execute(f"SELECT {getCol} FROM {tableName} WHERE {whereCol1} = ? AND {whereCol2} = ?", params)
+    return result.fetchone()[getCol]
 
  # -- Other Helper Methods
 def generate_id(length):

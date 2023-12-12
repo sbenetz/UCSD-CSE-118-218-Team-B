@@ -1,0 +1,251 @@
+{ "data": [
+{
+	"timestamp": "2023-12-11 13:00:00",
+	"soilMoisture": 72,
+	"sunlight": 500,
+	"deviceBattery": 98
+},
+
+{
+	"timestamp": "2023-12-08 00:15:00",
+	"soilMoisture": 60,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 00:30:00",
+	"soilMoisture": 50,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 00:45:00",
+	"soilMoisture": 80,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+
+{
+	"timestamp": "2023-12-08 01:00:00",
+	"soilMoisture": 75,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 01:15:00",
+	"soilMoisture": 65,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 01:30:00",
+	"soilMoisture": 82,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 01:45:00",
+	"soilMoisture": 75,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 05:00:00",
+	"soilMoisture": 75,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 05:15:00",
+	"soilMoisture": 65,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 05:30:00",
+	"soilMoisture": 60,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 05:45:00",
+	"soilMoisture": 70,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+
+{
+	"timestamp": "2023-12-08 08:00:00",
+	"soilMoisture": 60,
+	"sunlight": 100,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 08:15:00",
+	"soilMoisture": 75,
+	"sunlight": 120,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 08:30:00",
+	"soilMoisture": 85,
+	"sunlight": 130,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 08:45:00",
+	"soilMoisture": 75,
+	"sunlight": 150,
+	"deviceBattery": 0
+},
+{
+	"timestamp": "2023-12-08 10:00:00",
+	"soilMoisture": 72,
+	"sunlight": 180,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 10:15:00",
+	"soilMoisture": 60,
+	"sunlight": 220,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 10:30:00",
+	"soilMoisture": 90,
+	"sunlight": 280,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 10:45:00",
+	"soilMoisture": 80,
+	"sunlight": 360,
+	"deviceBattery": 0
+},
+{
+	"timestamp": "2023-12-08 13:00:00",
+	"soilMoisture": 75,
+	"sunlight": 380,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 13:15:00",
+	"soilMoisture": 70,
+	"sunlight": 431,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 13:30:00",
+	"soilMoisture": 65,
+	"sunlight": 469,
+	"deviceBattery": 80
+},
+
+{
+	"timestamp": "2023-12-08 13:45:00",
+	"soilMoisture": 63,
+	"sunlight": 479,
+	"deviceBattery": 0
+},
+{
+	"timestamp": "2023-12-08 17:00:00",
+	"soilMoisture": 60,
+	"sunlight": 100,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 17:15:00",
+	"soilMoisture": 75,
+	"sunlight": 120,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 17:30:00",
+	"soilMoisture": 85,
+	"sunlight": 130,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 17:45:00",
+	"soilMoisture": 75,
+	"sunlight": 150,
+	"deviceBattery": 0
+},
+{
+	"timestamp": "2023-12-08 20:00:00",
+	"soilMoisture": 68,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 20:15:00",
+	"soilMoisture": 60,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 20:30:00",
+	"soilMoisture": 50,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 20:45:00",
+	"soilMoisture": 80,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+{
+	"timestamp": "2023-12-08 23:00:00",
+	"soilMoisture": 75,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 23:15:00",
+	"soilMoisture": 72,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 23:30:00",
+	"soilMoisture": 69,
+	"sunlight": 0,
+	"deviceBattery": 0
+},
+
+{
+	"timestamp": "2023-12-08 23:45:00",
+	"soilMoisture": 67,
+	"sunlight": 0,
+	"deviceBattery": 0
+}
+]
+}

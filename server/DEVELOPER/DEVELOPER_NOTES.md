@@ -1,11 +1,14 @@
 # DEVELOPER NOTES
-These can be ignored
-## SSH Setup (local network)
-REQUIREMENT: Raspberry Pi must be on the same network as your machine
+Notes for Developers
 
-Default SSH: `ssh cse118@raspberrypiteamb.local`
+## SSH Setup For Raspberry Pi (local network)
+NOTE: this is information about SSHing into a Rasbperry Pi.
 
-Changes:
+REQUIREMENT: Raspberry Pi must be on the same network as your machine. Note, if needed you can run a ethernet connection from your computer to the Raspberry Pi & use that connection to SSH into the Raspberry Pi, using the Raspberry Pi's host name (default is `raspberrypi.local`). Then you can connect the Raspberry Pi to your local WiFi network, remove the ethernet cables, and simply SSH over wifi after that.
+
+Our Pi's SSH: `ssh cse118@raspberrypiteamb.local` (I changed the hostname to `raspberrypiteamb.local`)
+
+Notes for setting up SSH key authentication. What I did:
 - Added my computer's public key to the root & cse118 users so that I can ssh into both of them without a password
   - Used `ssh-copy-id cse118@raspberrypiteamb.local`
   - Copied authorized_keys file from cse118 user to root directory as well
@@ -34,26 +37,19 @@ ngrok config add-authtoken <TOKEN>
 Add logging & tunnels configuration to Ngrok config file (`/root/.config/ngrok/ngork.yml`). Example:
 ```yml
 version: "2"
-authtoken: <YOUR-AUTHENTICATION-TOKEN>
-
+authtoken: <YOUR-AUTH-TOKEN>
 log_level: info
 log: /root/.config/ngrok/ngrok.log
 
 tunnels:
-  test-api:
-    addr: 8001
-    inspect: false
-    schemes:
-      - http
-    proto: http
-
   prod-api:
     addr: 8000
     proto: http
     inspect: false
     schemes:
       - http
-    domain: <YOUR-DOMAIN>
+      - https
+    domain: <YOUR-DOMAIN-NAME>
 ```
 
 ### Setup Ngrok Service to start on startup
@@ -132,8 +128,8 @@ sqlite3 database.db < schema.sql
 ```
 
 ### Running
-Now, from your local machine, run [the build script](__build.sh) from this repository with the correct arguments:
+Now, from your local machine, run the build script from the server repository:
 ```sh
-./__build.sh <directory-name> <port-number>
+./build.sh
 ```
 
