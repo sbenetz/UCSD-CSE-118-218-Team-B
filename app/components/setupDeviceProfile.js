@@ -38,7 +38,7 @@ const DeviceProps = ({ route, navigation }) => {
                     <Text style={{ padding: 10, fontSize: 16, color: "blue" }} selectable={true}>
                         {computeDevicePropHEX(user_id.trim(), plant_type, plant_size, plant_name.trim())}
                     </Text>
-                    <Pressable style={styles.button} onPress={() => navigation.navigate('Home')}>
+                    <Pressable style={styles.button} onPress={() => navigation.navigate('Home', { userId: user_id })}>
                         <Text style={{ fontSize: 16, fontWeight: "bold", color: "white" }}>{"Done"}</Text>
                     </Pressable>
                 </ScrollView>
